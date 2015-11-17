@@ -1,0 +1,15 @@
+{
+  "name": "weekly-digest",
+  "version": "0.0.1",
+  "description": "Generates a weekly digest of most-reacted links on slack channels",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Victor Gama <hey@vito.io>",
+  "license": "MIT",
+  "dependencies": {
+    "nedb": "^1.4.0",
+    "slack-client": "^1.4.1"
+  }
+}
