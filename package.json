@@ -9,7 +9,9 @@
   "author": "Victor Gama <hey@vito.io>",
   "license": "MIT",
   "dependencies": {
+    "inflection": "^1.7.2",
     "nedb": "^1.4.0",
+    "npmlog": "^2.0.0",
     "slack-client": "^1.4.1"
   }
 }
