@@ -2,12 +2,22 @@
   "name": "weekly-digest",
   "version": "0.0.1",
   "description": "Generates a weekly digest of most-reacted links on slack channels",
-  "main": "src/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "repository": "https://github.com/d3estudio/weekly-digest.git",
+  "author": "Victor Gama <hey@vito.io> (http://vito.io/)",
+  "keywords": ["slack", "bot", "weekly", "digest"],
+  "contributors": [
+    "Kaio Medau <kaio@d3.do>"
+  ],
+  "homepage": "http://d3.do/weekly-digest",
+  "bugs": {
+    "url": "http://github.com/d3estudio/weekly-digest/issues",
+    "email": "victor@d3.do"
   },
-  "author": "Victor Gama <hey@vito.io>",
   "license": "MIT",
+  "engines": {
+    "node": ">= 5.1.0"
+  },
+  "os": [ "darwin", "linux" ],
   "dependencies": {
     "inflection": "^1.7.2",
     "nedb": "^1.4.0",
