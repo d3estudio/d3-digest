@@ -1,0 +1,9 @@
+#!/bin/bash
+echo ''
+if [ ! -f settings.json ]; then
+    echo -e "\033[92mCreated:\033[0m settings.json"
+    echo -e "{\n    \"token\": \"\"\n}" > settings.json
+else
+    echo -e "\033[96mSkipped:\033[0m settings.json (already present)"
+fi
+echo ''
