@@ -4,7 +4,12 @@
   "description": "Generates a weekly digest of most-reacted links on slack channels",
   "repository": "https://github.com/d3estudio/weekly-digest.git",
   "author": "Victor Gama <hey@vito.io> (http://vito.io/)",
-  "keywords": ["slack", "bot", "weekly", "digest"],
+  "keywords": [
+    "slack",
+    "bot",
+    "weekly",
+    "digest"
+  ],
   "contributors": [
     "Kaio Medau <kaio@d3.do>"
   ],
@@ -17,11 +22,15 @@
   "engines": {
     "node": ">= 5.1.0"
   },
-  "os": [ "darwin", "linux" ],
+  "os": [
+    "darwin",
+    "linux"
+  ],
   "dependencies": {
     "inflection": "^1.7.2",
     "nedb": "^1.4.0",
     "npmlog": "^2.0.0",
-    "slack-client": "^1.4.1"
+    "slack-client": "^1.4.1",
+    "unfurl-url": "^1.0.0"
   }
 }
