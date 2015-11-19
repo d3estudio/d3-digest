@@ -1,7 +1,8 @@
 var Datastore = require('nedb'),
-    inflection = require('inflection');
+    inflection = require('inflection'),
+    Settings = require('../settings');
 
-var db = new Datastore({ filename: './data', autoload: true });
+var db = new Datastore({ filename: Settings.storagePath(), autoload: true });
 
 class Bot {
     constructor(slack, logger, settings) {
