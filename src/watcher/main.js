@@ -48,10 +48,5 @@ var ignoredEvents = ['pong', 'hello', 'user_typing', 'presence_change', 'group_m
 slack.on('open', _ => {
         bot = new Bot(slack, logger, settings);
     })
-    .on('error', err => console.error('Error', err))
-    .on('raw_message', msg => {
-        if(msg.type && ignoredEvents.indexOf(msg.type) === -1) {
-            logger.verbose('entrypoint', 'Raw Message: ', msg)
-        }
-    })
+    .on('error', err => console.error('entrypoint', 'Error: ', err))
     .login();
