@@ -32,7 +32,7 @@ class Settings {
     }
 
     static rootPath() {
-        return Path.join(__dirname, '..', '..');
+        return Path.join(__dirname, '..');
     }
 
     static storagePath() {
