@@ -106,9 +106,24 @@ class Bot {
                 if(!channelCheck(msg.item.channel)) {
                     break;
                 }
-                var delta = msg.type === 'reaction_added' ? 1 : -1;
+                var delta = msg.type === 'reaction_added' ? 1 : -1,
+                    reaction = msg.reaction;
                 this.logger.verbose('Loopr', `Message TS ${msg.item.ts} updating reactions index with delta ${delta}`);
-                db.update({ ts: msg.item.ts }, { $inc: { reactions: delta } }, {}, () => this.loop());
+                db.find({ ts: msg.item.ts }, (err, docs) => {
+                    if(docs && docs.length === 1) {
+                        var d = docs[0];
+                        if(!d.reactions.hasOwnProperty(reaction)) {
+                            d.reactions[reaction] = 0;
+                        }
+                        d.reactions[reaction] = Math.max(0, d.reactions[reaction] + delta);
+                        if(d.reactions[reaction] === 0) {
+                            delete d.reactions[reaction]
+                        }
+                        db.update({ ts: d.ts }, d, {}, () => this.loop());
+                    } else {
+                        this.loop();
+                    }
+                });
                 break;
             case 'message_deleted':
                 if(!channelCheck(msg.channel)) {
@@ -141,7 +156,7 @@ class Bot {
                             // insert.
                             this.logger.verbose('Loopr', `Message TS ${msg.message.ts} not found on storage. Inserting a new one...`);
                             var channel = this.slack.getChannelGroupOrDMByID(msg.channel);
-                            db.insert({ ts: msg.message.ts, text: msg.message.text, channel: channel.name, reactions: 0, date: Date.now() }, _ => this.loop());
+                            db.insert({ ts: msg.message.ts, text: msg.message.text, channel: channel.name, reactions: {}, date: Date.now() }, _ => this.loop());
                         }
                     });
                 } else {
@@ -161,7 +176,7 @@ class Bot {
                             if(!!docs && docs.length < 1) {
                                 this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and does not exist on storage. Inserting now...`);
                                 var channel = this.slack.getChannelGroupOrDMByID(msg.channel);
-                                db.insert({ ts: msg.ts, text: msg.text, channel: channel.name, reactions: 0, date: Date.now() }, _ => this.loop());
+                                db.insert({ ts: msg.ts, text: msg.text, channel: channel.name, reactions: {}, date: Date.now() }, _ => this.loop());
                             } else {
                                 this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and already exists on storage. Skipping...`);
                                 this.loop();
