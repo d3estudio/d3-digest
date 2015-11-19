@@ -92,11 +92,11 @@ class Bot {
         var channelCheck = (chn) => {
             var channel = this.slack.getChannelGroupOrDMByID(chn);
             var exists = this.channels.indexOf(channel.name) > -1;
-            this.logger.verbose(`Checking ${channel.name} against ${this.channels.join(', ')}...`);
+            this.logger.verbose('Loopr', `Checking ${channel.name} against ${this.channels.join(', ')}...`);
             if(!exists) {
                 this.quietLoop = true;
             }
-            this.logger.verbose(`Result: ${exists}`);
+            this.logger.verbose('Loopr', `Result: ${exists}`);
             return exists;
         };
 
@@ -175,7 +175,7 @@ class Bot {
                 break;
             case 'group_joined':
                 if(this.settings.autoWatch) {
-                    this.logger.info(`Yay! I've been invited to ${msg.channel.name}! Updating settings...`);
+                    this.logger.info('Loopr', `Yay! I've been invited to ${msg.channel.name}! Updating settings...`);
                     var channels = this.settings.channels;
                     channels.push(msg.channel.name);
                     this.settings.channels = channels;
