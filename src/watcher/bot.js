@@ -155,8 +155,7 @@ class Bot {
                         } else {
                             // insert.
                             this.logger.verbose('Loopr', `Message TS ${msg.message.ts} not found on storage. Inserting a new one...`);
-                            var channel = this.slack.getChannelGroupOrDMByID(msg.channel);
-                            db.insert({ ts: msg.message.ts, text: msg.message.text, channel: channel.name, reactions: {}, date: Date.now() }, _ => this.loop());
+                            db.insert(this.objectForMessage(msg), _ => this.loop());
                         }
                     });
                 } else {
@@ -175,8 +174,7 @@ class Bot {
                         db.find({ ts: msg.ts }, (err, docs) => {
                             if(!!docs && docs.length < 1) {
                                 this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and does not exist on storage. Inserting now...`);
-                                var channel = this.slack.getChannelGroupOrDMByID(msg.channel);
-                                db.insert({ ts: msg.ts, text: msg.text, channel: channel.name, reactions: {}, date: Date.now() }, _ => this.loop());
+                                db.insert(this.objectForMessage(msg), _ => this.loop());
                             } else {
                                 this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and already exists on storage. Skipping...`);
                                 this.loop();
@@ -203,6 +201,27 @@ class Bot {
                 this.logger.warn('Loopr', `Unknown event caught: ${msg.type}. Ignoring...`);
                 this.loop();
                 break;
+        }
+    }
+
+    objectForMessage(msg) {
+        var channel = this.slack.getChannelGroupOrDMByID(msg.channel),
+            user = this.slack.getUserByID(msg.user);
+
+        var storeUser = {
+            'real_name': user.real_name,
+            'username': user.name,
+            'image': user.profile.image_192,
+            'title': user.profile.title
+        };
+
+        return {
+            ts: msg.ts,
+            text: msg.text,
+            channel: channel.name,
+            reactions: {},
+            date: Date.now(),
+            user: storeUser
         }
     }
 }
