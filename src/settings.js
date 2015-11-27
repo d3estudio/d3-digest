@@ -5,10 +5,11 @@ var fs = require('fs'),
 var defaultSettings = {
     token: '',
     modules: [],
-    messageMatcherRegex: /\b(http|https)?(:\/\/)?(\S*)\.(\w{2,4})\b/ig,
+    messageMatcherRegex: /\b(http|https)?(:\/\/)?(\S*)\.(\w{2,4})(\/([^\s]+))?\b/ig,
     channels: ['random'],
     loggerLevel: 'verbose',
-    autoWatch: false
+    autoWatch: false,
+    silencerEmojis: [':no_entry_sign:']
 };
 
 class Settings {
