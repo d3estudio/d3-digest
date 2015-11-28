@@ -4,7 +4,6 @@ var fs = require('fs'),
 
 var defaultSettings = {
     token: '',
-    modules: [],
     channels: ['random'],
     loggerLevel: 'verbose',
     autoWatch: false,
