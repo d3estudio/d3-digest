@@ -10,10 +10,10 @@ class Twitter extends Plugin {
         return url.match(this.regex) && !!this.settings.twitterConsumerKey && !!this.settings.twitterConsumerSecret;
     }
 
-    process(doc, callback) {
-        this.logger.verbose('twitter', `processing ${doc}`);
+    process(url, callback) {
+        this.logger.verbose('twitter', `processing ${url}`);
         request.get({
-            url: `https://api.twitter.com/1/statuses/oembed.json?url=${doc}`,
+            url: `https://api.twitter.com/1/statuses/oembed.json?url=${url}`,
             oauth: {
                 consumer_key: this.settings.twitterConsumerKey,
                 consumer_secret: this.settings.twitterConsumerSecret
@@ -26,7 +26,7 @@ class Twitter extends Plugin {
                 try {
                     callback({
                         'type': 'tweet',
-                        'embed':JSON.parse(body).html
+                        'embed': JSON.parse(body).html
                     });
                 } catch(ex) {
                     this.logger.error('twitter', 'Error processing response: ', e);

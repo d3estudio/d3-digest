@@ -10,10 +10,10 @@ class Vimeo extends Plugin {
         return url.match(this.regex);
     }
 
-    process(doc, callback) {
-        this.logger.verbose('vimeo', `processing ${doc}`);
+    process(url, callback) {
+        this.logger.verbose('vimeo', `processing ${url}`);
         request.get({
-            url: `https://vimeo.com/api/oembed.json?url=${doc}`
+            url: `https://vimeo.com/api/oembed.json?url=${url}`
         }, (e, r, body) => {
             if(e) {
                 this.logger.error('vimeo', 'Error processing request: ', e);

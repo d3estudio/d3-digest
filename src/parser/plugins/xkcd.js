@@ -11,10 +11,10 @@ class XKCD extends Plugin {
         return url.match(this.regex);
     }
 
-    process(doc, callback) {
-        this.logger.verbose('xkcd', `processing ${doc}`);
+    process(url, callback) {
+        this.logger.verbose('xkcd', `processing ${url}`);
         request.get({
-            url: doc
+            url: url
         }, (e, r, body) => {
             if(e) {
                 callback(null);
@@ -28,7 +28,7 @@ class XKCD extends Plugin {
                     'type': 'xkcd',
                     'img': img.attr('src'),
                     'title': img.attr('alt'),
-                    'link': doc
+                    'link': url
                 });
             } else {
                 this.logger.error('Empty XKCD #comic > img');

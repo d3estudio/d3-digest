@@ -10,10 +10,10 @@ class YouTube extends Plugin {
         return url.match(this.regex);
     }
 
-    process(doc, callback) {
-        this.logger.verbose('youtube', `processing ${doc}`);
+    process(url, callback) {
+        this.logger.verbose('youtube', `processing ${url}`);
         request.get({
-            url: `http://www.youtube.com/oembed?url=${doc}`
+            url: `http://www.youtube.com/oembed?url=${url}`
         }, (e, r, body) => {
             if(e) {
                 this.logger.error('youtube', 'Error processing request ', e);
