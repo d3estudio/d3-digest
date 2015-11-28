@@ -8,7 +8,8 @@ var Settings = require('../settings'),
     PluginLoader = require('./plugins'),
     settings = new Settings(),
     Processor = require('./processor'),
-    Engine = require('./engine');
+    Engine = require('./engine'),
+    EngineExtensions = require('./engine_extensions');
 
 var db = new Datastore({ filename: Settings.storagePath(), autoload: true });
 var slackUrlSeparator = /<(.*)>/;
@@ -64,7 +65,19 @@ db.find({ date: { $lte: now, $gte: past } }, function(error, docs) {
     });
     var processor = new Processor(settings, logger, plugins, docs);
     processor.process((err, result) => {
-        var en = new Engine();
-        fs.writeFileSync(Path.join(__dirname, 'test.html'), en.build('index.html', result));
+        var en = new Engine(),
+            ex = new EngineExtensions(logger);
+        ex.registerExtensionsOn(en.getEnvironment());
+        var html = '';
+        try {
+            html = en.build('index.html', result);
+        } catch(ex) {
+            logger.error('RenderEngine', 'Failed: ', ex);
+        }
+        if(html.length) {
+            var target = Path.join(__dirname, 'test.html');
+            fs.writeFileSync(target, html);
+            logger.info('RenderEngine', `Wrote result to ${target}`);
+        }
     });
 });

@@ -9,10 +9,14 @@ class Processor {
     }
 
     addMeta(result, doc) {
-        var copiable = ['reactions', 'user', 'date', 'channel'];
-        copiable.forEach((k) => result[k] = doc[1][k]);
+        var copiable = ['user', 'date', 'channel'];
+        var obj = doc[1];
+        copiable.forEach((k) => result[k] = obj[k]);
         result.url = doc[0];
-        result.id = doc[1]._id;
+        result.id = obj._id;
+        result.reactions = Object.keys(obj.reactions)
+            .map(r => ({ name: r, count: obj.reactions[r] }))
+            .sort((a, b) => b.count - a.count);
         return result;
     }
 
