@@ -18,7 +18,7 @@ class XKCD extends Plugin {
         }, (e, r, body) => {
             if(e) {
                 callback(null);
-                this.logger.error('vimeo', 'Error processing request: ', e);
+                this.logger.error('xkcd', 'Error processing request: ', e);
                 return;
             }
             var $ = cheerio.load(body),

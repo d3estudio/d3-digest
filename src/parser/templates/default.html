@@ -98,7 +98,7 @@
                         <div class="thumbnail">
                             <img src="{{ item.image.url }}" />
                             <div class="caption">
-                                <h3>{{ item.name|default(item.url) }}</h3>
+                                <h3>{{ item.title|default(item.site_name|default(item.url)) }}</h3>
                                 <p>{{ item.description }}</p>
                                 <p><a href="{{ item.url }}" class="btn btn-primary" role="button" target="_blank">Access</a></p>
                             </div>
