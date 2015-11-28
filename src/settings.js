@@ -16,7 +16,7 @@ class Settings {
     }
 
     static storagePath() {
-        return Path.join(Settings.rootPath(), 'storage', 'data.db')
+        return Path.join(Settings.rootPath(), 'storage', 'data.db');
     }
 
     static getSettingsPath() {
@@ -38,7 +38,7 @@ class Settings {
             if(ex.code === 'ENOENT') {
                 logger.error('settings', 'Settings file could not be found. Assuming default settings...');
             } else if(ex instanceof SyntaxError) {
-                logger.error('settings', 'Error parsing Settings file: ', ex)
+                logger.error('settings', 'Error parsing Settings file: ', ex);
             } else {
                 logger.error('settings', 'Unexpected error: ', ex);
             }
@@ -78,7 +78,7 @@ class Settings {
                     logger.error('settings', 'Cannot rewrite settings: ', ex);
                 }
                 this._channels = settings.channels;
-            },
+            }
         });
     }
 }

@@ -63,7 +63,7 @@ if(!program.output) {
 }
 
 try {
-    var stat = fs.statSync(Path.join(__dirname, 'templates', `${program.template}.html`));
+    stat = fs.statSync(Path.join(__dirname, 'templates', `${program.template}.html`));
     if(!stat.isFile()) {
         logger.error('parser', 'Template file if not a regular file: ', program.template);
         process.exit(1);
@@ -88,16 +88,17 @@ var pluginLoader = new PluginLoader(settings, logger),
 
 logger.verbose('parser', 'Loaded plugins: ', plugins.map(p => p.constructor.name).join(', '));
 
-var now = Date.now(),
-    past = moment(now).subtract(daysDelta, 'days').toDate().valueOf(),
-    m_f = moment(past),
+now = Date.now();
+past = moment(now).subtract(daysDelta, 'days').toDate().valueOf();
+
+var m_f = moment(past),
     m_t = moment(now),
     m_format = 'MMMM DD';
 
 logger.info('parser', `Querying data store for messages between ${m_f.format(m_format)} and ${m_t.format(m_format)}`);
 
 db.find({ date: { $lte: now, $gte: past } }, function(error, docs) {
-    if(!!error) {
+    if(error) {
         logger.error('parser', 'Error querying datastore: ', error);
         process.exit(1);
     }

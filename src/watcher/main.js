@@ -1,4 +1,4 @@
-console.log(['                                                                                ',
+console.log(['                                                                                ', //eslint-disable-line no-console
 '                                                                                    ',
 '             ╒▄      ╔▄⌐     ╓▄                      ▓─       ▐▓                    ',
 '              ▓▌    ╒▓▓▓     ▓▌                      ▓µ       ▐▓                    ',
@@ -39,14 +39,12 @@ if(!settings.token) {
 process.env.SLACK_LOG_LEVEL = 'alert';
 
 var Slack = require('slack-client'),
-    Bot = require('./bot'),
-    bot;
+    Bot = require('./bot');
 logger.info('entrypoint', 'Connecting to Slack...');
 var slack = new Slack(settings.token, true, true);
-var ignoredEvents = ['pong', 'hello', 'user_typing', 'presence_change', 'group_marked', 'channel_marked'];
 
-slack.on('open', _ => {
-        bot = new Bot(slack, logger, settings);
-    })
-    .on('error', err => console.error('entrypoint', 'Error: ', err))
-    .login();
+slack.on('open', () => {
+    var bot = new Bot(slack, logger, settings); //eslint-disable-line no-unused-vars
+})
+.on('error', err => logger.error('entrypoint', 'Error: ', err))
+.login();

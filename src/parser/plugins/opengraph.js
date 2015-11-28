@@ -3,7 +3,7 @@ var Plugin = require('./baseplugin'),
     firstBy = require('thenBy.js');
 
 class OpenGraph extends Plugin {
-    canHandle(url) {
+    canHandle() {
         return true;
     }
 
@@ -72,4 +72,4 @@ class OpenGraph extends Plugin {
 }
 
 OpenGraph.priority = -1;
-module.exports = OpenGraph
+module.exports = OpenGraph;

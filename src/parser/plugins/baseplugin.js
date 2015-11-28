@@ -7,7 +7,7 @@ class Plugin {
 
     init() { }
 
-    canHandle(url) {
+    canHandle() {
         return false;
     }
 

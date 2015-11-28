@@ -11,23 +11,9 @@ class EngineExtensions {
         return val.split(separator);
     }
 
-    firstProp(val, prop) {
-        console.log('FirstProp for ', val);
-        var item = null;
-        try {
-            item = val[prop];
-        } catch(ex) {}
-        if(item) {
-            console.log('returning ', item[prop]);
-            return item[prop];
-        }
-        console.log('returning null');
-        return null;
-    }
-
     emoji(name) {
-        var item = this.emojiDb.find((e) => e.aliases.indexOf(name) > -1)
-        if(!!item) {
+        var item = this.emojiDb.find((e) => e.aliases.indexOf(name) > -1);
+        if(item) {
             return item.emoji;
         }
         this.logger.warn('RenderEngineExtensions', `Unknown emoji: ${name}`);

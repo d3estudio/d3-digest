@@ -13,7 +13,7 @@ class Bot {
         this.quietLoop = true;
         this.queue = [];
         this.channels = settings.channels.map(c => c.toLowerCase());
-        db.ensureIndex({ fieldName: 'ts', unique: true}, function(err) { });
+        db.ensureIndex({ fieldName: 'ts', unique: true});
 
         logger.info('Bot', `Connected to Slack as @${slack.self.name} on ${slack.team.name}`);
         var slackChannels = Object.keys(slack.channels)
@@ -85,7 +85,7 @@ class Bot {
             return;
         }
         this.quietLoop = false;
-        if(!!msg.subtype) {
+        if(msg.subtype) {
             msg.type = msg.subtype;
         }
 
@@ -103,108 +103,108 @@ class Bot {
             this.logger.verbose('Loopr', `Result: ${exists}`);
             return exists;
         };
-
+        var matches;
         switch(msg.type) {
-            case 'reaction_added':
-            case 'reaction_removed':
-                if(!channelCheck(msg.item.channel)) {
-                    break;
-                }
-                var delta = msg.type === 'reaction_added' ? 1 : -1,
-                    reaction = msg.reaction;
-                this.logger.verbose('Loopr', `Message TS ${msg.item.ts} updating reactions index with delta ${delta}`);
-                db.find({ ts: msg.item.ts }, (err, docs) => {
-                    if(docs && docs.length === 1) {
-                        var d = docs[0];
-                        if(!d.reactions.hasOwnProperty(reaction)) {
-                            d.reactions[reaction] = 0;
-                        }
-                        d.reactions[reaction] = Math.max(0, d.reactions[reaction] + delta);
-                        if(d.reactions[reaction] === 0) {
-                            delete d.reactions[reaction]
-                        }
-                        db.update({ ts: d.ts }, d, {}, () => this.loop());
-                    } else {
-                        this.loop();
-                    }
-                });
+        case 'reaction_added':
+        case 'reaction_removed':
+            if(!channelCheck(msg.item.channel)) {
                 break;
-            case 'message_deleted':
-                if(!channelCheck(msg.channel)) {
-                    break;
-                }
-                db.remove({ ts: msg.deleted_ts }, {}, (err, num) => {
-                    if(num === 1) {
-                        this.logger.verbose('Loopr', `Message TS ${msg.deleted_ts} removed`);
-                    } else {
-                        this.quietLoop = true;
+            }
+            var delta = msg.type === 'reaction_added' ? 1 : -1,
+                reaction = msg.reaction;
+            this.logger.verbose('Loopr', `Message TS ${msg.item.ts} updating reactions index with delta ${delta}`);
+            db.find({ ts: msg.item.ts }, (err, docs) => {
+                if(docs && docs.length === 1) {
+                    var d = docs[0];
+                    if(!d.reactions.hasOwnProperty(reaction)) {
+                        d.reactions[reaction] = 0;
                     }
+                    d.reactions[reaction] = Math.max(0, d.reactions[reaction] + delta);
+                    if(d.reactions[reaction] === 0) {
+                        delete d.reactions[reaction];
+                    }
+                    db.update({ ts: d.ts }, d, {}, () => this.loop());
+                } else {
                     this.loop();
-                });
-                break;
-            case 'message_changed':
-                if(!channelCheck(msg.channel)) {
-                    break;
                 }
-                this.logger.verbose('Loopr', `Message TS ${msg.message.ts} was edited.`);
-                var matches = msg.message.text.match(this.settings.messageMatcherRegex);
+            });
+            break;
+        case 'message_deleted':
+            if(!channelCheck(msg.channel)) {
+                break;
+            }
+            db.remove({ ts: msg.deleted_ts }, {}, (err, num) => {
+                if(num === 1) {
+                    this.logger.verbose('Loopr', `Message TS ${msg.deleted_ts} removed`);
+                } else {
+                    this.quietLoop = true;
+                }
+                this.loop();
+            });
+            break;
+        case 'message_changed':
+            if(!channelCheck(msg.channel)) {
+                break;
+            }
+            this.logger.verbose('Loopr', `Message TS ${msg.message.ts} was edited.`);
+            matches = msg.message.text.match(this.settings.messageMatcherRegex);
+            if(matches && matches.length > 0) {
+                this.logger.verbose('Loopr', `Message TS ${msg.message.ts} still is eligible.`);
+                // Insert or update.
+                db.find({ ts: msg.message.ts }, (err, docs) => {
+                    if(!!docs && docs.length == 1) {
+                        this.logger.verbose('Loopr', `Message TS ${msg.message.ts} found on storage. Updating text...`);
+                        // update.
+                        db.update({ ts: msg.message.ts }, { text: msg.message.text }, {}, () => this.loop());
+                    } else {
+                        // insert.
+                        this.logger.verbose('Loopr', `Message TS ${msg.message.ts} not found on storage. Inserting a new one...`);
+                        db.insert(this.objectForMessage(msg), () => this.loop());
+                    }
+                });
+            } else {
+                // delete.
+                this.logger.verbose('Loopr', `Message TS ${msg.message.ts} is not eligible anymore and will be removed.`);
+                db.remove({ ts: msg.message.ts }, {}, () => this.loop());
+            }
+            break;
+        case 'message':
+            if(!channelCheck(msg.channel)) {
+                break;
+            }
+            if(msg.text) {
+                matches = msg.text.match(this.settings.messageMatcherRegex);
                 if(matches && matches.length > 0) {
-                    this.logger.verbose('Loopr', `Message TS ${msg.message.ts} still is eligible.`);
-                    // Insert or update.
-                    db.find({ ts: msg.message.ts }, (err, docs) => {
-                        if(!!docs && docs.length == 1) {
-                            this.logger.verbose('Loopr', `Message TS ${msg.message.ts} found on storage. Updating text...`);
-                            // update.
-                            db.update({ ts: msg.message.ts }, { text: msg.message.text }, {}, _ => this.loop());
+                    db.find({ ts: msg.ts }, (err, docs) => {
+                        if(!!docs && docs.length < 1) {
+                            this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and does not exist on storage. Inserting now...`);
+                            db.insert(this.objectForMessage(msg), () => this.loop());
                         } else {
-                            // insert.
-                            this.logger.verbose('Loopr', `Message TS ${msg.message.ts} not found on storage. Inserting a new one...`);
-                            db.insert(this.objectForMessage(msg), _ => this.loop());
+                            this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and already exists on storage. Skipping...`);
+                            this.loop();
                         }
                     });
                 } else {
-                    // delete.
-                    this.logger.verbose('Loopr', `Message TS ${msg.message.ts} is not eligible anymore and will be removed.`);
-                    db.remove({ ts: msg.message.ts }, {}, _ => this.loop());
+                    this.quietLoop = true;
+                    this.loop();
                 }
-                break;
-            case 'message':
-                if(!channelCheck(msg.channel)) {
-                    break;
+            }
+            break;
+        case 'group_joined':
+            if(this.settings.autoWatch) {
+                this.logger.info('Loopr', `Yay! I've been invited to ${msg.channel.name}! Updating settings...`);
+                var channels = this.settings.channels;
+                channels.push(msg.channel.name);
+                this.settings.channels = channels;
+                if(this.channels.indexOf(msg.channel.name) === -1) {
+                    this.channels.push(msg.channel.name);
                 }
-                if(msg.text) {
-                    var matches = msg.text.match(this.settings.messageMatcherRegex);
-                    if(matches && matches.length > 0) {
-                        db.find({ ts: msg.ts }, (err, docs) => {
-                            if(!!docs && docs.length < 1) {
-                                this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and does not exist on storage. Inserting now...`);
-                                db.insert(this.objectForMessage(msg), _ => this.loop());
-                            } else {
-                                this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and already exists on storage. Skipping...`);
-                                this.loop();
-                            }
-                        });
-                    } else {
-                        this.quietLoop = true;
-                        this.loop();
-                    }
-                }
-                break;
-            case 'group_joined':
-                if(this.settings.autoWatch) {
-                    this.logger.info('Loopr', `Yay! I've been invited to ${msg.channel.name}! Updating settings...`);
-                    var channels = this.settings.channels;
-                    channels.push(msg.channel.name);
-                    this.settings.channels = channels;
-                    if(this.channels.indexOf(msg.channel.name) === -1) {
-                        this.channels.push(msg.channel.name);
-                    }
-                }
-                break;
-            default:
-                this.logger.warn('Loopr', `Unknown event caught: ${msg.type}. Ignoring...`);
-                this.loop();
-                break;
+            }
+            break;
+        default:
+            this.logger.warn('Loopr', `Unknown event caught: ${msg.type}. Ignoring...`);
+            this.loop();
+            break;
         }
     }
 
@@ -226,7 +226,7 @@ class Bot {
             reactions: {},
             date: Date.now(),
             user: storeUser
-        }
+        };
     }
 }
 

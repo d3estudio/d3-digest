@@ -6,7 +6,7 @@ class Plugins {
         this.settings = settings;
         this.pluginsDir = Path.join(__dirname, 'plugins');
         this.logger = logger;
-        this.ignorablePlugins = ['baseplugin.js']
+        this.ignorablePlugins = ['baseplugin.js'];
     }
 
     listPlugins() {

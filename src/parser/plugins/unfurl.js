@@ -2,7 +2,7 @@ var Plugin = require('./baseplugin'),
     unfurl = require('unfurl-url');
 
 class Unfurl extends Plugin {
-    canHandle(url) {
+    canHandle() {
         return true;
     }
 

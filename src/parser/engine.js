@@ -31,14 +31,14 @@ class Engine {
             context.items.push(i);
             var u = context.users.find(u => u.username === i.user.username);
             if(!u.emojis) {
-                u.emojis = {}
+                u.emojis = {};
             }
             i.reactions.forEach(r => {
                 if(!u.emojis[r.name]) {
                     u.emojis[r.name] = 0;
                 }
                 u.emojis[r.name] += r.count;
-            })
+            });
         });
         context.users.map(u => {
             u.emojis = Object.keys(u.emojis)
