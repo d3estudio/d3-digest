@@ -1,4 +1,14 @@
 # Weekly Digest
+
+<p align="center">
+   <a href="https://travis-ci.org/d3estudio/weekly-digest"><img src="https://img.shields.io/travis/d3estudio/weekly-digest.svg" alt="Build Status"></a>
+   <img src="https://img.shields.io/david/d3estudio/weekly-digest.svg" alt="Dependency status" />
+   <img alt="Language" src="https://img.shields.io/badge/language-JS6-yellow.svg" />
+   <img alt="Platform" src="https://img.shields.io/badge/platform-NodeJS-brightgreen.svg" />
+   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg" />
+</p>
+
+
 Here at [D3 Estúdio](http://d3.do), Slack is our primary communication channel. Found a nice article? Slack. Found a cool gif? Slack. Want to spread the word about an event? Well, guess what? Slack.
 
 We have been overusing the (relatively) new [Reactions](http://slackhq.com/post/123561085920/reactions) feature lately, and we stumbled on a nice idea: _Why not create a digest based on these reactions_?
