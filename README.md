@@ -136,7 +136,7 @@ This is a special item kind, that represents an object that could not be parsed 
 
  - `url`: Item URL.
 
- ----
+----
 
 # License
 
