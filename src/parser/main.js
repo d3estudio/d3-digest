@@ -66,7 +66,6 @@ var runPlugins = function(doc, callback, index) {
     index = index || 0;
     var plug = plugins[index];
     if(!plug) {
-        logger.verbose('runPlugins', `plugin at index ${index} is not valid.`);
         callback(null, doc);
         return;
     } else {
@@ -76,7 +75,6 @@ var runPlugins = function(doc, callback, index) {
                     runPlugins(doc, callback, ++index);
                 } else {
                     if(plug.constructor.isUrlTransformer) {
-                        logger.verbose('runPlugins', `${plug} isUrlTransformer -> ${plug.constructor.isUrlTransformer}`)
                         doc[0] = result;
                         runPlugins(doc, callback, ++index);
                     } else {
