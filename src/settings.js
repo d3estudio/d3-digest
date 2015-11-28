@@ -8,7 +8,7 @@ var defaultSettings = {
     channels: ['random'],
     loggerLevel: 'verbose',
     autoWatch: false,
-    silencerEmojis: [':no_entry_sign:']
+    silencerEmojis: ['no_entry_sign']
 };
 
 class Settings {
