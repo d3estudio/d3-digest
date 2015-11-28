@@ -5,7 +5,7 @@ var fs = require('fs'),
 var defaultSettings = {
     token: '',
     channels: ['random'],
-    loggerLevel: 'verbose',
+    loggerLevel: 'info',
     autoWatch: false,
     silencerEmojis: ['no_entry_sign']
 };
