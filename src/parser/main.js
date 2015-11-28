@@ -22,9 +22,7 @@ program
 
 var db = new Datastore({ filename: Settings.storagePath(), autoload: true });
 var slackUrlSeparator = /<(.*)>/;
-var now = Date.now(),
-    past = moment(now).subtract(daysDelta, 'days').toDate().valueOf(),
-    targetFile, daysDelta;
+var now, past, targetFile, daysDelta;
 
 if(settings.loggerLevel) {
     logger.level = settings.loggerLevel;
@@ -90,7 +88,9 @@ var pluginLoader = new PluginLoader(settings, logger),
 
 logger.verbose('parser', 'Loaded plugins: ', plugins.map(p => p.constructor.name).join(', '));
 
-var m_f = moment(past),
+var now = Date.now(),
+    past = moment(now).subtract(daysDelta, 'days').toDate().valueOf(),
+    m_f = moment(past),
     m_t = moment(now),
     m_format = 'MMMM DD';
 
