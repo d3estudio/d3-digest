@@ -21,7 +21,11 @@ class Plugins {
         try {
             this.logger.verbose('pluginLoader', `Loading plugin: ${item}`);
             var raw_plugin = require(item);
-            plugin = new raw_plugin(this.settings, this.logger);
+            if(raw_plugin.priority > 1) {
+                this.logger.error('pluginLoader', `Refusing to load plugin "${item}": Incorrect priority value ${raw_plugin.priority}`);
+            } else {
+                plugin = new raw_plugin(this.settings, this.logger);
+            }
         } catch(ex) {
             this.logger.error('pluginLoader', `Error loading plugin at ${item}: `, ex);
         }

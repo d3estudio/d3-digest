@@ -1,11 +1,11 @@
 var moment = require('moment'),
     logger = require('npmlog'),
-    Datastore = require('nedb'),
-    async = require('async');
+    Datastore = require('nedb');
 
 var Settings = require('../settings'),
     PluginLoader = require('./plugins'),
-    settings = new Settings();
+    settings = new Settings(),
+    Processor = require('./processor');
 
 var db = new Datastore({ filename: Settings.storagePath(), autoload: true });
 var slackUrlSeparator = /<(.*)>/;
@@ -23,11 +23,14 @@ var pluginLoader = new PluginLoader(settings, logger),
     plugins = loadable
         .map((p) => pluginLoader.loadPlugin(p))
         .filter((p) => p)
-        .sort((a) => a.isUrlTransformer ? 0 : 1);
+        .sort((a, b) => a.constructor.priority - b.constructor.priority)
+        .sort((a) => a.constructor.isUrlTransformer ? 0 : 1);
+
+logger.verbose('parser', 'Loaded plugins: ', plugins.map(p => p.constructor.name).join(', '));
 
 var m_f = moment(past),
     m_t = moment(now),
-    m_format = 'MMMM DD'
+    m_format = 'MMMM DD';
 logger.info('parser', `Querying data store for messages between ${m_f.format(m_format)} and ${m_t.format(m_format)}`);
 
 db.find({ date: { $lte: now, $gte: past } }, function(error, docs) {
@@ -56,35 +59,8 @@ db.find({ date: { $lte: now, $gte: past } }, function(error, docs) {
             d
         ];
     });
-    console.dir(docs);
-    async.map(docs, runPlugins, function(err, result) {
-        console.dir(result);
+    var processor = new Processor(settings, logger, plugins, docs);
+    processor.process((err, result) => {
+        console.log(JSON.stringify(result));
     });
 });
-
-var runPlugins = function(doc, callback, index) {
-    index = index || 0;
-    var plug = plugins[index];
-    if(!plug) {
-        callback(null, doc);
-        return;
-    } else {
-        if(plug.canHandle(doc[0])) {
-            plug.process(doc[0], function(result) {
-                if(!result) {
-                    runPlugins(doc, callback, ++index);
-                } else {
-                    if(plug.constructor.isUrlTransformer) {
-                        doc[0] = result;
-                        runPlugins(doc, callback, ++index);
-                    } else {
-                        doc.result = result;
-                        callback(null, doc);
-                    }
-                }
-            });
-        } else {
-            runPlugins(doc, callback, ++index);
-        }
-    }
-}
