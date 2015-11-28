@@ -85,6 +85,10 @@ An `Item` represents a link posted to a watched channel. Its contents depends on
  - `reactions`: Array containing a list of reactions received by this post. Each item have the following structure:
    - `name`: Emoji name used on the reaction.
    - `count`: Number of times the item received this reaction.
+ - `totalReactions`: Sum of the reactions amount received by this item.
+ - `date`: Date this item was posted relative to Unix Epoch.
+ - `channel`: Name of the channel that this item was found.
+ - `id`: Unique identifier of this item.
 
 ### Item type: `youtube`
 The item was detected as an YouTube video. In this case, the following keys might be found:
