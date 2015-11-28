@@ -90,6 +90,10 @@ class Bot {
         }
 
         var channelCheck = (chn) => {
+            if(!chn) {
+                this.logger.warning('channelCheck', 'Received empty or false-y chn: ', chn);
+                return false;
+            }
             var channel = this.slack.getChannelGroupOrDMByID(chn);
             var exists = this.channels.indexOf(channel.name) > -1;
             this.logger.verbose('Loopr', `Checking ${channel.name} against ${this.channels.join(', ')}...`);
