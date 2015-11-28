@@ -55,7 +55,7 @@ db.find({ date: { $lte: now, $gte: past } }, function(error, docs) {
         var url = d.text.match(settings.messageMatcherRegex)[0],
             match = slackUrlSeparator.exec(url);
         if(match) {
-            url = match[1]
+            url = match[1];
         }
         return [
             url,
