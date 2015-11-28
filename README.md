@@ -44,7 +44,99 @@ You can customize how your instance works and picks data by changing other confi
 
 ## Parsing
 
-*Coming soon*
+After collecting data, you might want to process it and generate the digest. To do so, you will use the `script/parse` utility:
+```
+$ script/parse -o ~/digest.html -d 6
+[...]
+```
+
+You can customise how the parser behaves by using command line arguments:
+
+ - `-d, --days`: Defines how many days of data will be processed by the parser. Defaults to 6
+ - `-t, --template`: Defines which template will be used to output the information. Defaults to `default`
+ - `-o, --output`: Defines where to write the resulting information. This argument is **required**.
+ - `-v, --verbose`: Overrides `settings.loggerLevel` to `verbose`. Defaults to `false`
+
+# Templating
+
+If you want to write your own template, be aware that the [`nunjucks`]() template engine is used. You can see an
+example of template by accessing `src/parser/templates/default.html`. This file is read by the parser, compiled, and
+then filled with data by nunjucks. Some values are made available to your context while on the the template:
+
+ - `users`: `Array` of `Object`s. Contains all users who contributed to the generated digest.
+ - `items`: `Array` of `Object`s. The parsed links.
+ - `itemsForUser`: `Object`. Maps every item in `items` to its respective `user`.
+
+## `users`
+An `User` object contains information a given user that combributed to the generated digest. Useful if you intend to
+make an index. Each object contains the following fields:
+
+ - `real_name`: Full user's name.
+ - `username`: Slack username of the user.
+ - `image`: Slack avatar of the user.
+ - `title`: Slack title. Usually people fill this field with what they do in your company/group.
+ - `emojis`: List of emoji used in reactions to posts made by this user.
+
+## `items`
+An `Item` represents a link posted to a watched channel. Its contents depends on which plugin parsed the link, but common keys are:
+
+ - `type`: String representing the resulting item type. You can find a list of builtin types below.
+ - `user`: `User` that posted this item
+ - `reactions`: Array containing a list of reactions received by this post. Each item have the following structure:
+   - `name`: Emoji name used on the reaction.
+   - `count`: Number of times the item received this reaction.
+
+### Item type: `youtube`
+The item was detected as an YouTube video. In this case, the following keys might be found:
+
+ - `html`: HTML used to display the embeded video.
+ - `thumbnail_height`: Height, in pixels, of the video's thumbnail.
+ - `thumbnail_width`: Width, in pixels, of the video's thumbnail.
+ - `thumbnail_url`: Url pointing to the video's thumbnail.
+
+### Item type: `vimeo`
+Same as `youtube`.
+
+### Item type: `xkcd`
+Represents an XKCD comic. Keys are:
+
+ - `img`: URL of the comic image.
+ - `title`: Comic title
+ - `link`: Link to the original comic post.
+
+### Item type: `tweet`
+Represents a tweet. Keys are:
+
+ - `html`: HTML used to display the embeded tweet. This also includes javascript, directly from Twitter.
+
+> **Note**: The Twitter plugin requires certain configuration properties to be set. Please refer to the [Configuration Options](#configuration-options) section for more information.
+
+### Item type: `spotify`
+Represents a Spotify album, song, artist or playlist. Keys are:
+
+ - `html`: HTML used to display the embeded spotify player.
+
+### Item type: `rich-link`
+Represents a link that has does not match any other plugin and had its OpenGraph details extracted. Keys are:
+
+ - `ogType`: OpenGraph object type. Please refer to the [OpenGraph Protocol](http://ogp.me/#types) website for further information.
+ - `site_name`: If the object is part of a larger site, the name which should be displayed for the overall site.
+ - `title`: The object's title.
+ - `description`: A one to two sentence description of the object.
+ - `image`: If available, represents the bigger image the OG processor could find. This property, if defined, points to an object with the following subproperties:
+   - `url`: URL pointing to the image.
+   - `type`: Image mime-type.
+   - `width`: When available, image width, in pixels.
+   - `height`: When available, image height, in pixels.
+
+> **Note**: To learn more about OpenGraph, refer to the [OpenGraph Protocol Official Website](http://ogp.me).
+
+### Item type: `poor-link`
+This is a special item kind, that represents an object that could not be parsed by any of the available plugins. Its keys are:
+
+ - `url`: Item URL.
+
+ ----
 
 # License
 
