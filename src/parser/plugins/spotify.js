@@ -25,7 +25,7 @@ class Spotify extends Plugin {
                 try {
                     callback({
                         type: 'spotify',
-                        embed: JSON.parse(body).html
+                        html: JSON.parse(body).html
                     });
                 } catch(ex) {
                     this.logger.error('spotify', 'Error parsing response: ', ex);

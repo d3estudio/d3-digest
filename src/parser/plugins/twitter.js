@@ -25,8 +25,8 @@ class Twitter extends Plugin {
             } else {
                 try {
                     callback({
-                        'type': 'tweet',
-                        'embed': JSON.parse(body).html
+                        type: 'tweet',
+                        html: JSON.parse(body).html
                     });
                 } catch(ex) {
                     this.logger.error('twitter', 'Error processing response: ', e);
