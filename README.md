@@ -23,10 +23,6 @@ You can customize how your instance works and picks data by changing other confi
  - `token`: `String`
    - Your Slack Bot token key.
    - Defaults to `''`.
- - `messageMatcherRegex`: `String`
-   - Regex value used to detect which messages should be watched.
-   - Defaults to `/\b(http|https)?(:\/\/)?(\S*)\.(\w{2,4})\b/ig`.
-   - Please see the [notes](#notes) for more information about this field.
  - `channels`: `[String]`
    - List of channels to be watched.
    - Defaults to `['random']`.
@@ -36,23 +32,19 @@ You can customize how your instance works and picks data by changing other confi
  - `autoWatch`: `Boolean`
    - Defines whether new channels should be automatically watched. When set to `true`, any channel that the bot is invited to will automatically be inserted to the `channels` list, and your `settings.json` file will be overwritten with the new contents.
    - Defaults to `false`
+ - `silencerEmojis`: `[String]`
+   - Do not parse links containing the specified emoji. Please notice that this removes the link from the parsing process, which means that the link will be stored, even if a valid "silencer emoji" is used as a reaction.
+   - Defaults to `['no_entry_sign']`
+ - `twitterConsumerKey`: `String`
+   - Used by the Twitter parsing plugin to expand twitter urls into embeded tweets. To use this, register a new Twitter application and provide your API key in this field. When unset, the Twitter parsing plugin will refuse to expand twitter urls.
+   - Defaults to `undefined`
+ - `twitterConsumerSecret`: `String`
+   - Required along with `twitterConsumerKey` by the Twitter parsing plugin, if you intend to use it. Please provide your API secret in this field.
+   - Defaults to `undefined`
 
 ## Parsing
 
 *Coming soon*
-
-### Notes
-
-#### What about `messageMatcherRegex`?
-Well, we can't actually represent an Regular Expression in JSON, you know, and the one we use by default requires more than one argument to the `RegExp` constructor, but well, we kinda sorted it out. If you intend to use a Regular Expression that replaces the content rather than just matching them, please prepend it with `__SERIALIZED_REGEX`, so it will be like this in the JSON file:
-
-```json
-{
-    "messageMatcherRegex": "__SERIALIZED_REGEX /\\b(http|https)?(:\\/\\/)?(\\S*)\\.(\\w{2,4})\\b/gi"
-}
-```
-
-You will notice that if `autoWatch` is turned on and your bot is invited to a new channel, your settings file will reappear with this new key. Fear not! Everything will be okay.
 
 # License
 
