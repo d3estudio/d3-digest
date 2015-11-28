@@ -1,11 +1,14 @@
 var moment = require('moment'),
     logger = require('npmlog'),
-    Datastore = require('nedb');
+    Datastore = require('nedb'),
+    fs = require('fs'),
+    Path = require('path');
 
 var Settings = require('../settings'),
     PluginLoader = require('./plugins'),
     settings = new Settings(),
-    Processor = require('./processor');
+    Processor = require('./processor'),
+    Engine = require('./engine');
 
 var db = new Datastore({ filename: Settings.storagePath(), autoload: true });
 var slackUrlSeparator = /<(.*)>/;
@@ -61,6 +64,7 @@ db.find({ date: { $lte: now, $gte: past } }, function(error, docs) {
     });
     var processor = new Processor(settings, logger, plugins, docs);
     processor.process((err, result) => {
-        console.log(JSON.stringify(result));
+        var en = new Engine();
+        fs.writeFileSync(Path.join(__dirname, 'test.html'), en.build('index.html', result));
     });
 });
