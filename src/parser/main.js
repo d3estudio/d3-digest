@@ -1,6 +1,7 @@
 var moment = require('moment'),
     logger = require('npmlog'),
     Datastore = require('nedb'),
+    program = require('commander'),
     fs = require('fs'),
     Path = require('path');
 
@@ -11,14 +12,64 @@ var Settings = require('../settings'),
     Engine = require('./engine'),
     EngineExtensions = require('./engine_extensions');
 
+
+program
+    .option('-o, --output <file>', 'Where to output the result file')
+    .option('-t, --template [name]', 'Which template to use. Parser looks for template files on it\'s "templates" folder (src/parser/templates). Defaults to [default]', 'default')
+    .option('-v, --verbose', 'Wether to run this utility in verbose mode or not.')
+    .parse(process.argv);
+
 var db = new Datastore({ filename: Settings.storagePath(), autoload: true });
 var slackUrlSeparator = /<(.*)>/;
 var daysDelta = 6,
     now = Date.now(),
-    past = moment(now).subtract(daysDelta, 'days').toDate().valueOf();
+    past = moment(now).subtract(daysDelta, 'days').toDate().valueOf(),
+    targetFile;
 
 if(settings.loggerLevel) {
     logger.level = settings.loggerLevel;
+}
+
+if(program.verbose) {
+    logger.level = 'verbose';
+    logger.verbose('parser', 'Verbose mode.');
+}
+
+if(!program.output) {
+    logger.error('parser', 'You must provide an output destination write the parsing result.');
+    process.exit(1);
+} else {
+    targetFile = Path.resolve(process.cwd(), program.output);
+    try {
+        var stat = fs.statSync(targetFile);
+        if(!stat.isFile()) {
+            logger.error('parser', 'Output path is not a file.');
+            process.exit(1);
+        }
+    } catch(ex) {
+        if(ex.code === 'ENOENT') {
+            // Okay!
+        } else {
+            logger.error('parser', 'Error checking output dir: ', ex);
+            // Oh dear...
+            process.exit(1);
+        }
+    }
+}
+
+try {
+    var stat = fs.statSync(Path.join(__dirname, 'templates', `${program.template}.html`));
+    if(!stat.isFile()) {
+        logger.error('parser', 'Template file if not a regular file: ', program.template);
+        process.exit(1);
+    }
+} catch(ex) {
+    if(ex.code === 'ENOENT') {
+        logger.error('parser', 'Template file does not exist: ', program.template);
+    } else {
+        logger.error('parser', 'Error checking template file: ', ex);
+    }
+    process.exit(1);
 }
 
 logger.info('parser', 'Trying to load plugins...');
@@ -35,6 +86,7 @@ logger.verbose('parser', 'Loaded plugins: ', plugins.map(p => p.constructor.name
 var m_f = moment(past),
     m_t = moment(now),
     m_format = 'MMMM DD';
+
 logger.info('parser', `Querying data store for messages between ${m_f.format(m_format)} and ${m_t.format(m_format)}`);
 
 db.find({ date: { $lte: now, $gte: past } }, function(error, docs) {
@@ -70,14 +122,13 @@ db.find({ date: { $lte: now, $gte: past } }, function(error, docs) {
         ex.registerExtensionsOn(en.getEnvironment());
         var html = '';
         try {
-            html = en.build('index.html', result);
+            html = en.build(`${program.template}.html`, result);
         } catch(ex) {
             logger.error('RenderEngine', 'Failed: ', ex);
         }
         if(html.length) {
-            var target = Path.join(__dirname, 'test.html');
-            fs.writeFileSync(target, html);
-            logger.info('RenderEngine', `Wrote result to ${target}`);
+            fs.writeFileSync(targetFile, html);
+            logger.info('RenderEngine', `Wrote result to ${targetFile}`);
         }
     });
 });
