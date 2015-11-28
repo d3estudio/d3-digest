@@ -14,20 +14,27 @@ var Settings = require('../settings'),
 
 
 program
+    .option('-d, --days [6]', 'Defines how many days of data will be processed by the parser', 6)
     .option('-o, --output <file>', 'Where to output the result file')
-    .option('-t, --template [name]', 'Which template to use. Parser looks for template files on it\'s "templates" folder (src/parser/templates). Defaults to [default]', 'default')
-    .option('-v, --verbose', 'Wether to run this utility in verbose mode or not.')
+    .option('-t, --template [default]', 'Which template to use. Parser looks for template files on it\'s "templates" folder (src/parser/templates)', 'default')
+    .option('-v, --verbose', 'Whether to run this utility in verbose mode or not.')
     .parse(process.argv);
 
 var db = new Datastore({ filename: Settings.storagePath(), autoload: true });
 var slackUrlSeparator = /<(.*)>/;
-var daysDelta = 6,
-    now = Date.now(),
+var now = Date.now(),
     past = moment(now).subtract(daysDelta, 'days').toDate().valueOf(),
-    targetFile;
+    targetFile, daysDelta;
 
 if(settings.loggerLevel) {
     logger.level = settings.loggerLevel;
+}
+
+if(isNaN(program.days)) {
+    logger.error('parser', `"days" argument expects an integer number. You supplied: ${program.days}`);
+    process.exit(1);
+} else {
+    daysDelta = program.days;
 }
 
 if(program.verbose) {
