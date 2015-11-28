@@ -59,7 +59,8 @@ class OpenGraph extends Plugin {
                 } else {
                     callback({
                         type: 'rich-link',
-                        name: this.arrayOrValue(meta.site_name),
+                        ogType: this.arrayOrValue(meta.type),
+                        site_name: this.arrayOrValue(meta.site_name),
                         title: this.arrayOrValue(meta.title),
                         description: this.arrayOrValue(meta.description),
                         image: images ? images[0] : null
