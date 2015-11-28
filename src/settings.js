@@ -5,7 +5,6 @@ var fs = require('fs'),
 var defaultSettings = {
     token: '',
     modules: [],
-    messageMatcherRegex: /\b(http|https)?(:\/\/)?(\S*)\.(\w{2,4})(\/([^\s]+))?\b/ig,
     channels: ['random'],
     loggerLevel: 'verbose',
     autoWatch: false,
@@ -13,25 +12,6 @@ var defaultSettings = {
 };
 
 class Settings {
-    static RegexSerializer(key, value) {
-        if(key === 'messageMatcherRegex' && value instanceof RegExp) {
-            return ['__SERIALIZED_REGEX ', value.toString()].join('');
-        } else {
-            return value;
-        }
-    }
-
-    static RegexDeserializer(key, value) {
-        if(key === 'messageMatcherRegex' && value.toString().startsWith('__SERIALIZED_REGEX ')) {
-            var fields = value.split('__SERIALIZED_REGEX ')[1].match(/\/(.*)\/(.*)?/);
-            fields[2] = fields[2] || "";
-            fields.shift();
-            return new RegExp(...fields);
-        } else {
-            return value;
-        }
-    }
-
     static rootPath() {
         return Path.join(__dirname, '..');
     }
@@ -45,11 +25,12 @@ class Settings {
     }
 
     static loadSettings() {
-        return JSON.parse(fs.readFileSync(Settings.getSettingsPath()), Settings.RegexDeserializer);
+        return JSON.parse(fs.readFileSync(Settings.getSettingsPath()));
     }
 
     constructor() {
         this.settingsLoaded = false;
+        this.messageMatcherRegex = /\b(http|https)?(:\/\/)?(\S*)\.(\w{2,4})(\/([^\s]+))?\b/ig;
         var readSettings = defaultSettings;
         try {
             readSettings = Settings.loadSettings();
@@ -93,7 +74,7 @@ class Settings {
                 }
                 settings.channels = [ ...new Set(this._channels.concat(settings.channels).concat(value)) ].filter(v => v);
                 try {
-                    fs.writeFileSync(Settings.getSettingsPath(), JSON.stringify(settings, Settings.RegexSerializer, 4));
+                    fs.writeFileSync(Settings.getSettingsPath(), JSON.stringify(settings, null, 4));
                 } catch(ex) {
                     logger.error('settings', 'Cannot rewrite settings: ', ex);
                 }
