@@ -32,6 +32,7 @@
     "moment": "^2.10.6",
     "nedb": "^1.4.0",
     "npmlog": "^2.0.0",
+    "nunjucks": "^2.2.0",
     "open-graph": "git+https://git@github.com/victorgama/node-open-graph.git",
     "slack-client": "^1.4.1",
     "thenBy.js": "git+https://git@github.com/Teun/thenBy.js.git",
