@@ -72,7 +72,7 @@ class PoorLink extends Plugin {
                 } else {
                     callback(r);
                 }
-            }
+            };
             this.execute($, url, nextCallback);
         });
     }
@@ -95,7 +95,7 @@ class PoorLink extends Plugin {
     processImageSize(result, callback) {
         request({
             url: result.image,
-            encoding: null,
+            encoding: null
         }, (error, response, body) => {
             var orientation = 'vertical';
             if(!error && response.statusCode === 200) {
