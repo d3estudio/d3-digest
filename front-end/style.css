@@ -281,3 +281,10 @@ footer{
     padding: 20px;
     background: #131313;
 }
+
+
+/**********************************
+/**** Extra Styles & Overrides ****/
+.grid-item.spotify {
+    width: 300px!important;
+}
