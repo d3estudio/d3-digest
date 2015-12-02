@@ -21,7 +21,7 @@ class Vimeo extends Plugin {
             } else {
                 try {
                     var json = JSON.parse(body),
-                        fields = ['html', 'thumbnail_height', 'thumbnail_width', 'thumbnail_url'],
+                        fields = ['description', 'title', 'html', 'thumbnail_height', 'thumbnail_width', 'thumbnail_url'],
                         res = {
                             type: 'vimeo'
                         };

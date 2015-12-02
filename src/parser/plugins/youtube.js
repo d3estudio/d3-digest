@@ -21,7 +21,7 @@ class YouTube extends Plugin {
             } else {
                 try {
                     var json = JSON.parse(body),
-                        fields = ['html', 'thumbnail_height', 'thumbnail_width', 'thumbnail_url'],
+                        fields = ['title', 'html', 'thumbnail_height', 'thumbnail_width', 'thumbnail_url'],
                         res = {
                             'type': 'youtube'
                         };
