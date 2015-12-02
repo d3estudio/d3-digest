@@ -46,6 +46,7 @@ class Engine {
             return u;
         });
         context.items = context.items.sort((a, b) => b.totalReactions - a.totalReactions);
+        context.featuredItem = context.items.shift();
         return this.environment.render(file, context);
     }
 }
