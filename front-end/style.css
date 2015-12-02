@@ -190,7 +190,7 @@ img{
         padding: 0;
         list-style: none;
     }
-        .who_contributed li.gray{
+        .who_contributed li:nth-child(odd) {
             background: #fcfcfc;
         }
         .who_contributed li{
