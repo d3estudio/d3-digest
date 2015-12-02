@@ -1,0 +1,212 @@
+{% macro richlink_html(item) %}
+    {% if item.type == 'rich-link' %}
+        <div class="content_image">
+            <img src="{{ item.image }}" alt="{{ item.title }}">
+        </div>
+        <a target="_blank" href="{{ item.url }}">
+            <div class="content_meta grid_2">
+                <h2 class="content_tittle">{{ item.title }}</h2>
+                <div class="content_description">{{ item.summary }}</div>
+            </div>
+        </a>
+    {% endif %}
+{% endmacro %}
+
+{% macro youtube_html(item) %}
+    {% if item.type == 'youtube' %}
+        {{ item.html|safe }}
+    {% endif %}
+{% endmacro %}
+
+{% macro twitter_html(item) %}
+    {% if item.type == 'tweet' %}
+        {{ item.html|safe }}
+    {% endif %}
+{% endmacro %}
+
+{% macro vimeo_html(item) %}
+    {% if item.type == 'vimeo' %}
+        {{ item.html|safe }}
+    {% endif %}
+{% endmacro %}
+
+{% macro spotify_html(item) %}
+    {% if item.type == 'spotify' %}
+        {{ item.html|safe }}
+    {% endif %}
+{% endmacro %}
+
+{% macro video_meta(item) %}
+    {% if item.type == 'youtube' or item.type == 'vimeo' %}
+        <div class="content_image">
+            <img src="{{ item.thumbnail_url }}" alt="{{ item.title }}">
+        </div>
+        <a target="_blank" href="{{ item.url }}">
+            <div class="content_meta grid_2">
+                <h2 class="content_tittle">{{ item.title }}</h2>
+                <div class="content_description">{{ item.description }}</div>
+            </div>
+        </a>
+    {% endif %}
+{% endmacro %}
+
+
+
+{% macro featured(item) %}
+<div class="content_box featured grid-item grid-item--width3 {{ item.type }}">
+    {{ richlink_html(item) }}
+    {{ twitter_html(item) }}
+    {{ video_meta(item) }}
+    {{ spotify_html(item) }}
+</div>
+{% endmacro %}
+
+{% macro richlink(item) %}
+    {% if item.type == 'rich-link' %}
+        <div class="content_box normal grid-item{% if item.imageOrientation == 'horizontal' %} grid-item--width2{% endif %}">
+            <div class="content_image">
+                <img src="{{ item.image }}" >
+            </div>
+            <a target="_blank" href="{{ item.url }}">
+                <div class="content_meta">
+                    <h2 class="content_tittle">{{ item.title }}</h2>
+                    <div class="content_description">{{ item.summary }}</div>
+                </div>
+            </a>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro youtube(item) %}
+    {% if item.type == 'youtube' %}
+        <div class="content_box normal grid-item grid-item--width2 {{ item.type }}">
+            {{ item.html|safe }}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro twitter(item) %}
+    {% if item.type == 'tweet' %}
+        <div class="content_box normal grid-item {{ item.type }}">
+            {{ item.html|safe }}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro vimeo(item) %}
+    {% if item.type == 'vimeo' %}
+        <div class="content_box normal grid-item grid-item--width2 {{ item.type }}">
+            {{ item.html|safe }}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro spotify(item) %}
+    {% if item.type == 'spotify' %}
+        <div class="content_box normal grid-item {{ item.type }}">
+            {{ item.html|safe }}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+
+<!doctype html>
+<html class="export">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+    <meta name="description" content="D3 Weekly Digest description">
+
+    <title>D3 Weekly Digest</title>
+
+    <link rel="stylesheet" href="style.css" media="screen">
+
+    <!-- Google Fonts -->
+    <link href='https://fonts.googleapis.com/css?family=PT+Serif+Caption:400,400italic' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,400italic,100,100italic,300,300italic,500,500italic,700,700italic,900,900italic' rel='stylesheet' type='text/css'>
+    <!-- END Google Fonts -->
+
+    <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/2.2.2/isotope.pkgd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/isotope.packery/1.3.2/packery-mode.pkgd.min.js"></script>
+    <!--<script src="js/isotope.pkgd.min.js"></script>-->
+    <script src="//twemoji.maxcdn.com/twemoji.min.js"></script>
+
+</head>
+<body class="page">
+
+    <div id="page_cover">
+        <div class="cover_pattern"></div>
+        <header>
+            <div class="d3_logo"></div>
+            <h1 class="cover_title">Weekly Digest</h1>
+            <div class="cover_separator">#</div>
+            <div class="cover_description">what we are saying</div>
+        </header>
+    </div>
+
+    <div id="page_content">
+
+        <nav class="content_top_menu">
+            <a class="menu-item videos" href="#" title="Vídeos" alt="Vídeos">Videos</a>
+            <a class="menu-item audios" href="#" title="Audios &amp; Musics" alt="Audios &amp; Musics">Audios &amp; Musics</a>
+            <a class="menu-item contact" href="#" title="Contact us" alt="Contact us">Contact us</a>
+            <a href="#" title="D3 Weekly Digest on GitHub" alt="D3 Weekly Digest on GitHub">
+                <div class="menu-item github">D3 Weekly Digest on GitHub</div>
+            </a>
+        </nav>
+
+        <div id="content_wrapper" class="grid">
+
+            <!-- FEATURED BOX -->
+            <!-- BOX width 3 -->
+            {{ featured(featuredItem) }}
+
+            <!-- Who contributed -->
+            <!-- BOX width 1 -->
+            <!-- grid-sizer define o tamanho das colunas -->
+            <div class="who_contributed grid-item grid-sizer">
+                <h3 class="box_title">Who contributed</h3>
+                <ul class="contributors">
+                    {% for user in users %}
+                    <li class="contributor">
+                        <img src="{{ user.image }}" alt="{{ user.real_name }}">
+                        <div class="contributer_meta">
+                            <h4 class="name">{{ user.real_name }}</h4>
+                            <div class="posts_count">{{ itemsForUser[user.username]|length }} post{% if itemsForUser[user.username]|length > 1 %}s{% endif %} </div>
+                            <ul class="reactions">
+                                {% for emoji in user.emojis %}
+                                <li class="reaction">
+                                    {{ emoji|emoji }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            {% for item in items %}
+                {{ richlink(item) }}
+                {{ youtube(item) }}
+                {{ twitter(item) }}
+                {{ vimeo(item) }}
+                {{ spotify(item) }}
+            {% endfor %}
+
+        </div>
+
+    </div>
+    <footer>
+
+    </footer>
+
+
+<script src="js/application.js"></script>
+
+</body>
+</html>
