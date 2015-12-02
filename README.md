@@ -87,6 +87,10 @@ make an index. Each object contains the following fields:
  - `title`: Slack title. Usually people fill this field with what they do in your company/group.
  - `emojis`: List of emoji used in reactions to posts made by this user.
 
+## `featuredItem`
+An object with same properties as an `item` (described below). This is the object that received most reactions.
+> **Note**: This object will not be part of the `items` array.
+
 ## `items`
 An `Item` represents a link posted to a watched channel. Its contents depends on which plugin parsed the link, but common keys are:
 
@@ -103,13 +107,16 @@ An `Item` represents a link posted to a watched channel. Its contents depends on
 ### Item type: `youtube`
 The item was detected as an YouTube video. In this case, the following keys might be found:
 
+ - `title`: Video title
  - `html`: HTML used to display the embeded video.
  - `thumbnail_height`: Height, in pixels, of the video's thumbnail.
  - `thumbnail_width`: Width, in pixels, of the video's thumbnail.
  - `thumbnail_url`: Url pointing to the video's thumbnail.
 
 ### Item type: `vimeo`
-Same as `youtube`.
+Same as `youtube`, with one more property:
+
+ - `description`: Video description
 
 ### Item type: `xkcd`
 Represents an XKCD comic. Keys are:
@@ -133,15 +140,10 @@ Represents a Spotify album, song, artist or playlist. Keys are:
 ### Item type: `rich-link`
 Represents a link that has does not match any other plugin and had its OpenGraph details extracted. Keys are:
 
- - `ogType`: OpenGraph object type. Please refer to the [OpenGraph Protocol](http://ogp.me/#types) website for further information.
- - `site_name`: If the object is part of a larger site, the name which should be displayed for the overall site.
- - `title`: The object's title.
- - `description`: A one to two sentence description of the object.
- - `image`: If available, represents the bigger image the OG processor could find. This property, if defined, points to an object with the following subproperties:
-   - `url`: URL pointing to the image.
-   - `type`: Image mime-type.
-   - `width`: When available, image width, in pixels.
-   - `height`: When available, image height, in pixels.
+ - `title`: Page title or OpenGraph item name
+ - `summary`: Page description or OpenGraph item description
+ - `image`: Image representing the item, or, the first image found in the page
+ - `imageOrientation`: Is this image vertical or horizontal? It matters, you see.
 
 > **Note**: To learn more about OpenGraph, refer to the [OpenGraph Protocol Official Website](http://ogp.me).
 
