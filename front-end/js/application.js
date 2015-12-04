@@ -30,20 +30,38 @@ var application = {
                 $('iframe').ready,
                 $('img').load
             ).done(function() {
-                $('.grid-item.vimeo').find('iframe').each(function() {
+                $('.grid-item.vimeo, .grid-item.youtube').find('iframe').each(function() {
                     var $this = $(this);
                     $this.css({
-                        height: $this.parent().height(),
+                        height: Math.round(($this.parent().width() / 16) * 9),
                         width: $this.parent().width()
                     });
                 });
-                $('.grid').isotope({
-                    percentPosition: true,
-                    itemSelector: '.grid-item',
-                    masonry: {
-                        columnWidth: '.grid-sizer'
-                    }
+
+                $('.grid-item.tweet').find('iframe').each(function() {
+                    var $this = $(this);
+                    $this.css({
+                        marginTop: 0,
+                        marginBottom: 0
+                    });
                 });
+
+                $('.grid-item').find('img').each(function() {
+                    var $this = $(this);
+                    $this.css({
+                        maxHeight: $(this).parent().height()
+                    });
+                });
+                setTimeout(function() {
+                    $('.grid').isotope({
+                        percentPosition: true,
+                        itemSelector: '.grid-item',
+                        layoutMode: 'packery',
+                        packery: {
+                            columnWidth: '.grid-sizer'
+                        }
+                    });
+                }, 300);
             });
         });
     },

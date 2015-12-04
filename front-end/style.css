@@ -285,6 +285,11 @@ footer{
 
 /**********************************
 /**** Extra Styles & Overrides ****/
-.grid-item.spotify {
-    width: 300px!important;
+.grid-item.spotify, .grid-item.spotify iframe {
+    max-height: 80px!important;
+    max-height: 80px!important;
+}
+
+.grid-item.spotify iframe {
+    width: 100%!important;
 }
