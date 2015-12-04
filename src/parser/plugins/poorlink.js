@@ -25,7 +25,7 @@ class PoorLink extends Plugin {
                 body => body('meta[name="twitter:image"]').attr('content'),                         // Twitter Card
                 body => body('meta[itemprop="image"]').first().attr('content') || body('div img').first().attr('src')
             ]
-        }
+        };
     }
 
     process(url, callback) {
@@ -59,7 +59,7 @@ class PoorLink extends Plugin {
                 result = {
                     type: 'poor-link',
                     title: title
-                }
+                };
                 if(!result.title) {
                     result = null;
                 }
