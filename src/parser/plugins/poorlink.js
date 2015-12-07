@@ -55,7 +55,7 @@ class PoorLink extends Plugin {
             } else {
                 var procs = this.processors.title,
                     title = null;
-                procs.forEach(p => title |= p($));
+                procs.forEach(p => title = title || p($));
                 result = {
                     type: 'poor-link',
                     title: title
