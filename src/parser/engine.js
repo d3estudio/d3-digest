@@ -10,8 +10,8 @@ class Engine {
         return this.environment;
     }
 
-    build(file, data) {
-        var context = { users: [], items: [], itemsForUser: { } };
+    build(file, data, extra) {
+        var context = { users: [], items: [], itemsForUser: { }, extra: extra || {} };
         data.forEach((i) => {
             if(!context.users.some(u => u.username === i.user.username)) {
                 context.users.push(i.user);
