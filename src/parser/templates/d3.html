@@ -63,7 +63,7 @@
 
 {% macro richlink(item) %}
     {% if item.type == 'rich-link' %}
-        <div class="content_box normal grid-item{% if item.imageOrientation == 'horizontal' %} grid-item--width2{% endif %}">
+        <div class="content_box normal grid-item{% if item.imageOrientation == 'horizontal' %} grid-invalid-item--width2{% endif %}">
             <div class="content_image">
                 <img src="{{ item.image }}" >
             </div>
@@ -79,7 +79,7 @@
 
 {% macro youtube(item) %}
     {% if item.type == 'youtube' %}
-        <div class="content_box normal grid-item grid-item--width2 {{ item.type }}">
+        <div class="content_box normal grid-item grid-item {{ item.type }}">
             {{ item.html|safe }}
         </div>
     {% endif %}
@@ -95,7 +95,7 @@
 
 {% macro vimeo(item) %}
     {% if item.type == 'vimeo' %}
-        <div class="content_box normal grid-item grid-item--width2 {{ item.type }}">
+        <div class="content_box normal grid-item grid-item {{ item.type }}">
             {{ item.html|safe }}
         </div>
     {% endif %}
@@ -119,7 +119,7 @@
     <meta name="description" content="D3 Weekly Digest description">
 
     <title>D3 Weekly Digest</title>
-
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css">
     <link rel="stylesheet" href="style.css" media="screen">
 
     <!-- Google Fonts -->

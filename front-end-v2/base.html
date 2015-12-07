@@ -34,6 +34,8 @@
         </header>
     </div>
 
+    <div class="pattern"></div>
+
     <div id="page_content">
 
         <nav class="content_top_menu">
@@ -222,6 +224,26 @@
       masonry: {
         columnWidth: '.grid-sizer'
       }
+    });
+
+    var fadeStart   = 0 // 100px scroll or less will equiv to 1 opacity
+        ,fadeUntil  = screen.height / 2  // 200px scroll or more will equiv to 0 opacity
+        ,fading     = $('#page_cover header')
+        ,pattern    = $('.cover_pattern')
+
+    ;
+
+    $(window).bind('scroll', function(){
+        console.log( screen.height , $(document).scrollTop() );
+        var offset = $(document).scrollTop()
+            ,opacity=0;
+        if( offset <= fadeStart ){
+            opacity = 1;
+        }else if( offset <= fadeUntil ){
+            opacity = 1 - offset/fadeUntil;
+        }
+        fading.css('opacity',opacity);
+        pattern.css('opacity',opacity);
     });
 </script>
 
