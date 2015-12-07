@@ -320,22 +320,42 @@ iframe{
             background: #fcfcfc;
         }
 
-    .simple_colorful .content_meta{
+.grid-item.simple:nth-child(odd) .content_meta {
         background: #d73360;
         color: #fff;
     }
-        .simple_colorful .content_url{
-            background: #d22f5c;
-        }
-        .simple_colorful a .content_tittle, .simple_colorful a:visited .content_tittle{
-            color: #fff;
-        }
-        .simple_colorful a .content_url, .simple_colorful a:visited .content_url{
-            color: #ffdee7;
-        }
+
+    .grid-item.simple:nth-child(odd) .content_url {
+        background: #d22f5c;
+    }
+
+    .grid-item.simple:nth-child(odd) a .content_tittle, .grid-item.simple:nth-child(odd) a:visited .content_tittle {
+        color: #fff;
+    }
+
+    .grid-item.simple:nth-child(odd) a .content_url, .grid-item.simple:nth-child(odd) a:visited .content_url {
+        color: #ffdee7;
+    }
 
 
-.date_dark, .simple_dark .content_meta{
+.grid-item.simple:nth-child(even) .content_meta {
+        background: #131313;
+    }
+
+    .grid-item.simple:nth-child(even) .content_url {
+        background: #222;
+    }
+
+    .grid-item.simple:nth-child(even) a .content_tittle, .grid-item.simple:nth-child(even) a:visited .content_tittle {
+        color: #c6c6c6;
+    }
+
+    .grid-item.simple:nth-child(even) a .content_url, .grid-item.simple:nth-child(even) a:visited .content_url {
+        color: #999;
+    }
+
+
+.date_dark{
         background: #131313;
     }
         .date_dark .content_tittle{
@@ -352,20 +372,6 @@ iframe{
             padding-top: 0;
             font-size: 10px;
         }
-
-        .simple_dark .content_url{
-            background: #222;
-        }
-        .simple_dark a .content_tittle, .simple_dark a:visited .content_tittle{
-            color: #c6c6c6;
-        }
-        .simple_dark a .content_url, .simple_dark a:visited .content_url{
-            color: #999;
-        }
-
-    .simple_colorful .content_meta, .simple_dark .content_meta{
-        padding-bottom: 14px;
-    }
 
 /**********************************
 /**** Footer ****/
