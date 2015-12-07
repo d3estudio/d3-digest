@@ -130,7 +130,7 @@ db.find({ date: { $lte: now, $gte: past } }, function(error, docs) {
         ex.registerExtensionsOn(en.getEnvironment());
         var html = '';
         try {
-            html = en.build(`${program.template}.html`, result);
+            html = en.build(`${program.template}.html`, result, { since: past });
         } catch(ex) {
             logger.error('RenderEngine', 'Failed: ', ex);
         }
