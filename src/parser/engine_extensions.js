@@ -1,6 +1,27 @@
 var Path = require('path'),
     fs = require('fs');
 
+Date.prototype.getWeekOfMonth = function () {
+    var dayOfMonth = this.getDay();
+    var month = this.getMonth();
+    var year = this.getFullYear();
+    var checkDate = new Date(year, month, this.getDate());
+    var checkDateTime = checkDate.getTime();
+    var currentWeek = 0;
+
+    for (var i = 1; i < 32; i++) {
+        var loopDate = new Date(year, month, i);
+
+        if (loopDate.getDay() === dayOfMonth) {
+            currentWeek++;
+        }
+
+        if (loopDate.getTime() === checkDateTime) {
+            return currentWeek;
+        }
+    }
+};
+
 class EngineExtensions {
     constructor(logger) {
         this.emojiDb = JSON.parse(fs.readFileSync(Path.join(__dirname, 'emoji', 'db.json')));
@@ -18,6 +39,32 @@ class EngineExtensions {
         }
         this.logger.warn('RenderEngineExtensions', `Unknown emoji: ${name}`);
         return null;
+    }
+
+    weekOfMonth(date) {
+        var d = new Date(date).getWeekOfMonth(),
+            data = ['', 'st', 'nd', 'rd'],
+            postfix = 'th';
+        if(d < data.length) {
+            postfix = data[d];
+        }
+        return [d, postfix].join('');
+    }
+
+    monthName(date) {
+        var d = new Date(date);
+        return d.toLocaleString("en-us", { month: "long" })
+    }
+
+    yearOfDate(date) {
+        var d = new Date(date);
+        return d.getFullYear();
+    }
+
+    domain(string) {
+        var r = /(?:https?:\/\/)?([^\/]+).*/,
+            result = r.exec(string);
+        return result ? result[1] : string;
     }
 
     registerExtensionsOn(environment) {
