@@ -186,7 +186,7 @@ iframe{
     .content_url{
         padding: 10px 16px;
         border-radius: 10px;
-        margin: 0 26px 0 26px;
+        margin: 0 26px 10px 26px;
     }
         .content_description, .content_url{
             font-size: 12px;
@@ -239,6 +239,7 @@ iframe{
         padding: 8px 20px;
         display: inline-block;
         max-height: 28px;
+        min-height: 28px;
         overflow: hidden;
     }
         .content_reactions .reactions, .content_reactions .reactions_title{
@@ -319,6 +320,10 @@ iframe{
         .content_box .content_description{
             background: #fcfcfc;
         }
+
+.grid-item.simple .content_meta {
+    min-height: 110px;
+}
 
 .grid-item.simple:nth-child(odd) .content_meta {
         background: #d73360;

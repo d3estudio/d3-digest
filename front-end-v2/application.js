@@ -23,7 +23,7 @@ $.when(
             // percentPosition: true,
             itemSelector: '.grid-item',
             masonry: {
-                columnWidth: '.grid-sizer'
+                columnWidth: '.grid-item'
             }
         });
     }, 400);

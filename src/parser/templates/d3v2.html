@@ -1,6 +1,20 @@
+{% macro reactions(item) %}
+<div class="content_reactions">
+    <div class="reactions_title"><strong>D3</strong>reactions</div>
+    <ul class="reactions">
+        {% for reaction in item.reactions %}
+        <li class="reaction">
+            {{ reaction.name|emoji }}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endmacro %}
+
 {% macro richlink(item) %}
     {% if item.type == 'rich-link' %}
         <div class="content_box grid-item" data-item-type="{{ item.type }}">
+            {{ reactions(item) }}
             <div class="content_image">
                 <img src="{{ item.image }}" alt="{{ item.title }}">
             </div>
@@ -13,6 +27,7 @@
         </div>
     {% elif item.type == 'poor-link' %}
         <div class="content_box simple grid-item" data-item-type="{{ item.type }}">
+            {{ reactions(item) }}
             <a target="_blank" href="{{ item.url }}" alt="{{ item.title }}" title="{{ item.title }}">
                 <div class="content_meta">
                     <h2 class="content_tittle">{{ item.title }}</h2>
@@ -26,6 +41,7 @@
 {% macro video(item) %}
     {% if item.type == 'youtube' or item.type == 'vimeo' %}
         <div class="content_box grid-item" data-item-type="{{ item.type }}">
+            {{ reactions(item) }}
             {{ item.html|safe }}
             <a target="_blank" href="{{ item.url }}" alt="{{ item.title }}" title="{{ item.title }}">
                 <div class="content_meta">
@@ -40,6 +56,7 @@
 {% macro embed(item) %}
     {% if item.type == 'tweet' or item.type == 'spotify' %}
         <div class="content_box simple_dark embed grid-item" data-item-type="{{ item.type }}">
+            {{ reactions(item) }}
             {{ item.html|safe }}
         </div>
     {% endif %}
@@ -48,6 +65,7 @@
 {% macro xkcd(item) %}
     {% if item.type == 'xkcd' %}
         <div class="content_box grid-item" data-item-type="{{ item.type }}">
+            {{ reactions(item) }}
             <div class="content_image">
                 <img src="{{ item.img }}" alt="{{ item.title }}">
             </div>
@@ -100,43 +118,10 @@
         <div class="pattern"></div>
 
         <div id="page_content">
-            <nav class="content_top_menu">
-                <a class="menu-item videos" href="#" title="Vídeos" alt="Vídeos">Videos</a>
-                <a class="menu-item audios" href="#" title="Audios &amp; Musics" alt="Audios &amp; Musics">Audios &amp; Musics</a>
-                <a class="menu-item contact" href="#" title="Contact us" alt="Contact us">Contact us</a>
-                <a href="#" title="D3 Weekly Digest on GitHub" alt="D3 Weekly Digest on GitHub">
-                    <div class="menu-item github">D3 Weekly Digest on GitHub</div>
-                </a>
-            </nav>
-
             <div id="content_wrapper" class="grid">
                 <div class="content_box date_dark grid-item">
                     <h2 class="content_tittle">{{ extra.since|weekOfMonth }} Week</h2>
                     <div class="content_description">{{ extra.since|monthName }} {{ extra.since|yearOfDate }}</div>
-                </div>
-
-                <div class="who_contributed grid-item grid-sizer">
-                    <h3 class="box_title">Who contributed</h3>
-                    <ul class="contributors">
-                        {% for user in users %}
-                        <li class="contributor">
-                            <img src="{{ user.image }}" alt="{{ user.real_name }}">
-                            <div class="contributer_meta">
-                                <h4 class="name">{{ user.real_name }}</h4>
-                                <div class="posts_count">
-                                    {{ itemsForUser[user.username]|length }} post{% if itemsForUser[user.username]|length > 1 %}s{% endif %}
-                                </div>
-                                <ul class="reactions">
-                                    {% for emoji in user.emojis %}
-                                        <li class="reaction">
-                                            {{ emoji|emoji }}
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
                 </div>
 
                 {{ process(featuredItem) }}
@@ -145,7 +130,14 @@
                 {% endfor %}
             </div>
         </div>
-        <footer></footer>
+        <footer>
+            <nav>
+                <a href="http://d3.do" title="D3.do">D3.do</a>
+                <a href="#" title="D3 Lab">D3 Lab</a>
+                <a href="#" title="Contact us">Contact us</a>
+                <a href="https://github.com/d3estudio/weekly-digest" title="Fork us on GitHub" target="_blank">Fork us on GitHub</a>
+            </nav>
+        </footer>
         <script type="text/javascript" src="application.js"></script>
     </body>
 </html>
