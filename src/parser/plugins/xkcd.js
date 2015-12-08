@@ -28,6 +28,7 @@ class XKCD extends Plugin {
                     'type': 'xkcd',
                     'img': img.attr('src'),
                     'title': img.attr('alt'),
+                    'explain': img.attr('title'),
                     'link': url
                 });
             } else {
