@@ -53,7 +53,7 @@ class EngineExtensions {
 
     monthName(date) {
         var d = new Date(date);
-        return d.toLocaleString("en-us", { month: "long" })
+        return d.toLocaleString('en-us', { month: 'long' });
     }
 
     yearOfDate(date) {
