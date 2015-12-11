@@ -1,11 +1,11 @@
 var Datastore = require('nedb'),
     inflection = require('inflection'),
-    Settings = require('../settings');
-
-var db = new Datastore({ filename: Settings.storagePath(), autoload: true });
+    Settings = require('../shared/settings'),
+    Mongo = require('../shared/mongo')
 
 class Bot {
     constructor(slack, logger, settings) {
+        this.db = new Mongo(settings.mongoUrl, logger);
         this.slack = slack;
         this.logger = logger;
         this.settings = settings;
@@ -13,7 +13,18 @@ class Bot {
         this.quietLoop = true;
         this.queue = [];
         this.channels = settings.channels.map(c => c.toLowerCase());
-        db.ensureIndex({ fieldName: 'ts', unique: true});
+        this.collection = null;
+        // Ensure index on TS
+        this.db.perform((db, callback) => {
+            this.collection = db.collection('items');
+            db.collection('items').createIndex(
+                { 'ts': 1 },
+                { 'unique': true },
+                function(err, results) {
+                    callback();
+                }
+            );
+        });
 
         logger.info('Bot', `Connected to Slack as @${slack.self.name} on ${slack.team.name}`);
         var slackChannels = Object.keys(slack.channels)
@@ -75,6 +86,10 @@ class Bot {
     }
 
     loop() {
+        if(!this.collection) {
+            this.looping = false;
+            return;
+        }
         var msg = this.queue.shift();
         if(!msg) {
             if(!this.quietLoop) {
@@ -113,27 +128,30 @@ class Bot {
             var delta = msg.type === 'reaction_added' ? 1 : -1,
                 reaction = msg.reaction;
             this.logger.verbose('Loopr', `Message TS ${msg.item.ts} updating reactions index with delta ${delta}`);
-            db.find({ ts: msg.item.ts }, (err, docs) => {
-                if(docs && docs.length === 1) {
-                    var d = docs[0];
-                    if(!d.reactions.hasOwnProperty(reaction)) {
-                        d.reactions[reaction] = 0;
+            this.collection.findOne({ ts: msg.item.ts }).then((doc) => {
+                    if(doc) {
+                        if(!doc.reactions.hasOwnProperty(reaction)) {
+                            doc.reactions[reaction] = 0;
+                        }
+                        doc.reactions[reaction] = Math.max(0, doc.reactions[reaction] + delta);
+                        if(doc.reactions[reaction] === 0) {
+                            delete doc.reactions[reaction];
+                        }
+                        this.collection.replaceOne({ _id: doc._id }, doc, () => this.loop());
+                    } else {
+                        this.loop();
                     }
-                    d.reactions[reaction] = Math.max(0, d.reactions[reaction] + delta);
-                    if(d.reactions[reaction] === 0) {
-                        delete d.reactions[reaction];
-                    }
-                    db.update({ ts: d.ts }, d, {}, () => this.loop());
-                } else {
+                })
+                .catch((ex) => {
+                    logger.error('Loopr', `Error processing findOne for ts ${msg.item.ts}`, ex);
                     this.loop();
-                }
-            });
+                });
             break;
         case 'message_deleted':
             if(!channelCheck(msg.channel)) {
                 break;
             }
-            db.remove({ ts: msg.deleted_ts }, {}, (err, num) => {
+            this.collection.deleteMany({ ts: msg.deleted_ts }, (err, num) => {
                 if(num === 1) {
                     this.logger.verbose('Loopr', `Message TS ${msg.deleted_ts} removed`);
                 } else {
@@ -151,21 +169,23 @@ class Bot {
             if(matches && matches.length > 0) {
                 this.logger.verbose('Loopr', `Message TS ${msg.message.ts} still is eligible.`);
                 // Insert or update.
-                db.find({ ts: msg.message.ts }, (err, docs) => {
-                    if(!!docs && docs.length == 1) {
-                        this.logger.verbose('Loopr', `Message TS ${msg.message.ts} found on storage. Updating text...`);
-                        // update.
-                        db.update({ ts: msg.message.ts }, { text: msg.message.text }, {}, () => this.loop());
-                    } else {
-                        // insert.
-                        this.logger.verbose('Loopr', `Message TS ${msg.message.ts} not found on storage. Inserting a new one...`);
-                        db.insert(this.objectForMessage(msg), () => this.loop());
-                    }
+                this.collection.findOne({ ts: msg.message.ts })
+                    .then((doc) => {
+                        if(doc) {
+                            this.logger.verbose('Loopr', `Message TS ${msg.message.ts} found on storage. Updating text...`);
+                            // update.
+                            doc.text = msg.message.text
+                            this.collection.replaceOne({ ts: msg.message.ts }, doc, () => this.loop());
+                        } else {
+                            // insert.
+                            this.logger.verbose('Loopr', `Message TS ${msg.message.ts} not found on storage. Inserting a new one...`);
+                            this.collection.insertOne(this.objectForMessage(msg), () => this.loop());
+                        }
                 });
             } else {
                 // delete.
                 this.logger.verbose('Loopr', `Message TS ${msg.message.ts} is not eligible anymore and will be removed.`);
-                db.remove({ ts: msg.message.ts }, {}, () => this.loop());
+                this.collection.deleteMany({ ts: msg.message.ts }, {}, () => this.loop());
             }
             break;
         case 'message':
@@ -175,14 +195,15 @@ class Bot {
             if(msg.text) {
                 matches = msg.text.match(this.settings.messageMatcherRegex);
                 if(matches && matches.length > 0) {
-                    db.find({ ts: msg.ts }, (err, docs) => {
-                        if(!!docs && docs.length < 1) {
-                            this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and does not exist on storage. Inserting now...`);
-                            db.insert(this.objectForMessage(msg), () => this.loop());
-                        } else {
-                            this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and already exists on storage. Skipping...`);
-                            this.loop();
-                        }
+                    this.collection.findOne({ ts: msg.ts })
+                        .then((doc) => {
+                            if(!doc) {
+                                this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and does not exist on storage. Inserting now...`);
+                                this.collection.insertOne(this.objectForMessage(msg), () => this.loop());
+                            } else {
+                                this.logger.verbose('Loopr', `Message TS ${msg.ts} is eligible and already exists on storage. Skipping...`);
+                                this.loop();
+                            }
                     });
                 } else {
                     this.quietLoop = true;

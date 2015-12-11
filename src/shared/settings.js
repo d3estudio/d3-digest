@@ -7,16 +7,15 @@ var defaultSettings = {
     channels: ['random'],
     loggerLevel: 'info',
     autoWatch: false,
-    silencerEmojis: ['no_entry_sign']
+    silencerEmojis: ['no_entry_sign'],
+    mongoUrl: 'mongodb://localhost:27017/weeklyDigest',
+    memcachedHost: '127.0.0.1',
+    memcachedPort: 11211
 };
 
 class Settings {
     static rootPath() {
-        return Path.join(__dirname, '..');
-    }
-
-    static storagePath() {
-        return Path.join(Settings.rootPath(), 'storage', 'data.db');
+        return Path.join(__dirname, '..', '..');
     }
 
     static getSettingsPath() {
