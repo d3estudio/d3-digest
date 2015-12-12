@@ -47,11 +47,7 @@ app.get('/', (req, res) => {
     res.send(fs.readFileSync(index), 'text/html');
 });
 
-app.get('/api/latest', (req, res) => {
-    logger.verbose('web', 'Request for api/latest');
-    var rawPresent = Date.now(),
-        past = moment(rawPresent).subtract(settings.outputDayRange, 'days'),
-        rawPast = past.toDate().valueOf();
+var handleRequest = function(res, rawPast, rawPresent) {
     parser.itemsInRange(rawPresent, rawPast, (err, result) => {
         var response = {
             from: rawPast,
@@ -64,6 +60,26 @@ app.get('/api/latest', (req, res) => {
             res.status(200).type('json').send(JSON.stringify(response));
         }
     });
+}
+
+app.get('/api/latest', (req, res) => {
+    logger.verbose('web', 'Request for api/latest');
+    var rawPresent = Date.now(),
+        past = moment(rawPresent).subtract(settings.outputDayRange, 'days'),
+        rawPast = past.toDate().valueOf();
+    handleRequest(res, rawPast, rawPresent);
+});
+
+app.get('/api/from/:from', (req, res) => {
+    logger.verbose('web', `Request for api/from/${req.params.from}`);
+    if(isNaN(req.params.from)) {
+        res.status(403).send('Incorrect parameters.');
+        return;
+    }
+    var rawPresent = parseInt(req.params.from),
+        past = moment(rawPresent).subtract(settings.outputDayRange, 'days'),
+        rawPast = past.toDate().valueOf();
+    handleRequest(res, rawPast, rawPresent);
 });
 
 var server = app.listen(process.env.PORT || 2708, () => {
