@@ -1,8 +1,8 @@
-# Weekly Digest
+# D3 Digest
 
 <p align="center">
-   <a href="https://travis-ci.org/d3estudio/weekly-digest"><img src="https://img.shields.io/travis/d3estudio/weekly-digest.svg" alt="Build Status"></a>
-   <img src="https://img.shields.io/david/d3estudio/weekly-digest.svg" alt="Dependency status" />
+   <a href="https://travis-ci.org/d3estudio/d3-digest"><img src="https://img.shields.io/travis/d3estudio/d3-digest.svg" alt="Build Status"></a>
+   <img src="https://img.shields.io/david/d3estudio/d3-digest.svg" alt="Dependency status" />
    <img alt="Language" src="https://img.shields.io/badge/language-JS6-yellow.svg" />
    <img alt="Platform" src="https://img.shields.io/badge/platform-NodeJS-brightgreen.svg" />
    <img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg" />
@@ -13,19 +13,25 @@ Here at [D3 Estúdio](http://d3.do), Slack is our primary communication channel.
 
 We have been overusing the (relatively) new [Reactions](http://slackhq.com/post/123561085920/reactions) feature lately, and we stumbled on a nice idea: _Why not create a digest based on these reactions_?
 
-Well, this is what **Weekly Digest** does: it watches channels through a bot and stores messages and their respective reactions.
+Well, this is what **D3 Digest** does: it watches channels through a bot and stores messages and their respective reactions.
 
 ## Installing
 
-Installing it is pretty easy. You will need Node.js version 5.1.0 or upwards and NPM. Follow me:
+The development environment is managed by [Azk](http://azk.io), which handles Docker and VirtualBox in order to keep everything running smoothly. To get up and running on your machine, follow these steps:
 
-1. Clone this repository and `cd` to it.
-2. Install required dependencies through `npm install`
-3. Head to https://my.slack.com/services/new/bot, create a new bot user and get its token
-4. Run `script/bootstrap` at the repository root.
-5. Edit `settings.json`. Insert your bot key value at the `token` key.
-6. Run the watcher process through `script/watch`.
-7. Profit!
+   1. Download and install [Docker Toolbox](https://www.docker.com/docker-toolbox).
+   2. Install [Azk](http://docs.azk.io/en/installation/)
+   3. Clone this repo and `cd` into it.
+   4. Run `script/bootstrap`, which will create your `settings.json` file.
+      1. Head to [Slack Team Customization Page](http://my.slack.com/services/new/bot) and create a new bot and get its token.
+      2. Fill the `token` property on the recently-generated `settings` file.
+   5. Start applications you want:
+      1. To start the `watcher` process, that connects to Slack and watches predefined channels (please refer to the list below), run `azk start watcher`.
+      2. To start the `web` process, that allows you to see collected links and reactions, run `azk start web`.
+   6. To check system status, use `azk status`. This command will also shows hostnames and ports.
+
+> **Note**: You can also open the web application by running `azk open web`.
+
 
 ## Configuration options
 You can customize how your instance works and picks data by changing other configuration options on `settings.json`. See the list below:
@@ -51,27 +57,39 @@ You can customize how your instance works and picks data by changing other confi
  - `twitterConsumerSecret`: `String`
    - Required along with `twitterConsumerKey` by the Twitter parsing plugin, if you intend to use it. Please provide your API secret in this field.
    - Defaults to `undefined`
+ - `mongoUrl`: `String`
+   - URL to your local Mongo instance, used to store links and reactions.
+   - Defaults to `mongodb://localhost:27017/digest`
+ - `memcachedHost`: `String`
+   - IP to local Memcached server. This is used to store processed links, like its metadata or HTML content. Notice that, although this is not required, it will improve drastically the time required by the web interface to load and show the items.
+   - Defaults to `127.0.0.1`
+ - `memcachedPort`: `String` or `Number`
+   - Port where your Memcached server is running.
+   - Defaults to `11211`
+ - `outputDayRange`: `Number`
+   - Range of days to gather links from. This is used by the web interface to paginate requests for links.
+   - Defaults to `1`.
+ - `timezone`: `String`
+   - Timezone of your Slack team.
+   - Defaults to `America/Sao_Paulo`
+ - `showLinksWithoutReaction`: `Boolean`
+   - Defines the behaviour of the web interface regarding collected links without reactions. When set to `true`, links without reactions will also be shown on the web interface.
+   - Defaults to `false`
 
-## Parsing
+# API
 
-After collecting data, you might want to process it and generate the digest. To do so, you will use the `script/parse` utility:
-```
-$ script/parse -o ~/digest.html -d 6
-[...]
-```
+The web server exposes an API that allows the frontend to get links and reactions. The server actually exposes two endpoints:
 
-You can customise how the parser behaves by using command line arguments:
+ - `/api/latest`
+ - `/api/from/<int>`
 
- - `-d, --days`: Defines how many days of data will be processed by the parser. Defaults to 6
- - `-t, --template`: Defines which template will be used to output the information. Defaults to `default`
- - `-o, --output`: Defines where to write the resulting information. This argument is **required**.
- - `-v, --verbose`: Overrides `settings.loggerLevel` to `verbose`. Defaults to `false`
+Calling any of the listed endpoints will result in the same kind of response, which will have the following structure:
 
-# Templating
+ - `from` and `until`: Used when querying the database, defines the range of time that composes the resulting `items` object. `from` must be used to future calls to `/api/from`, being passed to the `<int>` parameter.
+ - `items`: See next topic.
 
-If you want to write your own template, be aware that the [`nunjucks`]() template engine is used. You can see an
-example of template by accessing `src/parser/templates/default.html`. This file is read by the parser, compiled, and
-then filled with data by nunjucks. Some values are made available to your context while on the the template:
+## `items`
+The `items` property exposes informations about users who sent links, and their respective links. Available properties are:
 
  - `users`: `Array` of `Object`s. Contains all users who contributed to the generated digest.
  - `items`: `Array` of `Object`s. The parsed links.
@@ -86,10 +104,6 @@ make an index. Each object contains the following fields:
  - `image`: Slack avatar of the user.
  - `title`: Slack title. Usually people fill this field with what they do in your company/group.
  - `emojis`: List of emoji used in reactions to posts made by this user.
-
-## `featuredItem`
-An object with same properties as an `item` (described below). This is the object that received most reactions.
-> **Note**: This object will not be part of the `items` array.
 
 ## `items`
 An `Item` represents a link posted to a watched channel. Its contents depends on which plugin parsed the link, but common keys are:
@@ -151,6 +165,7 @@ Represents a link that has does not match any other plugin and had its OpenGraph
 This is a special item kind, that represents an object that could not be parsed by any of the available plugins. Its keys are:
 
  - `url`: Item URL.
+ - `title`: Item title.
 
 ----
 

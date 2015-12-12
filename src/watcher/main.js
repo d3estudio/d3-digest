@@ -23,7 +23,7 @@ console.log(['                                                                  
 
 
 var logger = require('npmlog');
-var Settings = require('../settings'),
+var Settings = require('../shared/settings'),
     settings = new Settings();
 
 if(settings.loggerLevel) {

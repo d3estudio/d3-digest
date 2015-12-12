@@ -7,16 +7,18 @@ var defaultSettings = {
     channels: ['random'],
     loggerLevel: 'info',
     autoWatch: false,
-    silencerEmojis: ['no_entry_sign']
+    silencerEmojis: ['no_entry_sign'],
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/digest',
+    memcachedHost: process.env.MEMCACHED_HOST || '127.0.0.1',
+    memcachedPort: process.env.MEMCACHED_PORT || '11211',
+    outputDayRange: 1,
+    timezone: 'America/Sao_Paulo',
+    showLinksWithoutReaction: false
 };
 
 class Settings {
     static rootPath() {
-        return Path.join(__dirname, '..');
-    }
-
-    static storagePath() {
-        return Path.join(Settings.rootPath(), 'storage', 'data.db');
+        return Path.join(__dirname, '..', '..');
     }
 
     static getSettingsPath() {
