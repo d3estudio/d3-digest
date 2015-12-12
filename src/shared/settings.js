@@ -8,7 +8,7 @@ var defaultSettings = {
     loggerLevel: 'info',
     autoWatch: false,
     silencerEmojis: ['no_entry_sign'],
-    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/weeklyDigest',
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/digest',
     memcachedHost: process.env.MEMCACHED_HOST || '127.0.0.1',
     memcachedPort: process.env.MEMCACHED_PORT || '11211',
     outputDayRange: 1,
