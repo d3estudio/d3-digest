@@ -12,7 +12,8 @@ var defaultSettings = {
     memcachedHost: process.env.MEMCACHED_HOST || '127.0.0.1',
     memcachedPort: process.env.MEMCACHED_PORT || '11211',
     outputDayRange: 1,
-    timezone: 'America/Sao_Paulo'
+    timezone: 'America/Sao_Paulo',
+    showLinksWithoutReaction: false
 };
 
 class Settings {

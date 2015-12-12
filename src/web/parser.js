@@ -13,12 +13,16 @@ class Parser {
         var slackUrlSeparator = /<(.*)>/;
         this.logger.verbose('parser', `Selecting between ${past} and ${present}...`);
         this.mongo.perform((db, dbCallback) => {
-            db.collection('items').find({
+            var query = {
                 date: {
                     $lte: present,
                     $gte: past
                 }
-            }).toArray((err, docs) => {
+            };
+            if(!this.settings.showLinksWithoutReaction) {
+                query.$where = 'Object.keys(this.reactions).length > 0';
+            }
+            db.collection('items').find(query).toArray((err, docs) => {
                 if(err) {
                     callback(err, null);
                 } else {
