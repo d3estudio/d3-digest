@@ -5,7 +5,7 @@ var logger = require('npmlog'),
     fs = require('fs'),
     moment = require('moment-timezone');
 
-var Settings = require('../shared/settings'),
+var Settings = require('../shared/settings.js'),
     settings = new Settings(),
     Mongo = require('../shared/mongo'),
     PluginLoader = require('./plugins'),
@@ -47,10 +47,15 @@ app.get('/api/latest', (req, res) => {
         past = moment(rawPresent).subtract(settings.outputDayRange, 'days'),
         rawPast = past.toDate().valueOf();
     parser.itemsInRange(rawPresent, rawPast, (err, result) => {
+        var response = {
+            from: rawPast,
+            until: rawPresent,
+            items: result
+        };
         if(err) {
             res.status(500).send('Error');
         } else {
-            res.status(200).type('json').send(JSON.stringify(result));
+            res.status(200).type('json').send(JSON.stringify(response));
         }
     });
 });
