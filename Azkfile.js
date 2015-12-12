@@ -25,7 +25,7 @@ systems({
             PORT: '2708',
         },
     },
-    'watch': {
+    'watcher': {
         depends: ['db'],
         image: {'docker': 'azukiapp/node:5'},
         provision: [
