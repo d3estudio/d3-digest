@@ -127,6 +127,9 @@ class Bot {
             }
             var delta = msg.type === 'reaction_added' ? 1 : -1,
                 reaction = msg.reaction;
+            if(reaction.indexOf('::') > -1) {
+                reaction = reaction.split('::')[0];
+            }
             this.logger.verbose('Loopr', `Message TS ${msg.item.ts} updating reactions index with delta ${delta}`);
             this.collection.findOne({ ts: msg.item.ts }).then((doc) => {
                     if(doc) {
