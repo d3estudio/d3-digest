@@ -8,9 +8,11 @@ var defaultSettings = {
     loggerLevel: 'info',
     autoWatch: false,
     silencerEmojis: ['no_entry_sign'],
-    mongoUrl: 'mongodb://localhost:27017/weeklyDigest',
-    memcachedHost: '127.0.0.1',
-    memcachedPort: 11211
+    mongoUrl: process.env.MONGODB_URI || 'mongodb://localhost:27017/weeklyDigest',
+    memcachedHost: process.env.MEMCACHED_HOST || '127.0.0.1',
+    memcachedPort: process.env.MEMCACHED_PORT || '11211',
+    outputDayRange: 1,
+    timezone: 'America/Sao_Paulo'
 };
 
 class Settings {
