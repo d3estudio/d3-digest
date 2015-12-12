@@ -138,14 +138,20 @@ class Processor {
             }
             i.reactions.forEach(r => {
                 if(!u.emojis[r.name]) {
-                    u.emojis[r.name] = 0;
+                    u.emojis[r.name] = {
+                        name: r.name,
+                        repr: this.getEmojiUnicode(r.name),
+                        count: 0
+                    };
                 }
-                u.emojis[r.name] += r.count;
+                u.emojis[r.name].count += r.count;
             });
         });
-        context.users.map(u => {
+        context.users = context.users.map(u => {
             u.emojis = Object.keys(u.emojis)
-                .sort((a, b) => u.emojis[b] - u.emojis[b]);
+                .map((k) => u.emojis[k])
+                .sort((a, b) => b.count - a.count)
+                .map((o) => o.repr);
             return u;
         });
         context.items = context.items.sort((a, b) => b.totalReactions - a.totalReactions);
