@@ -112,6 +112,33 @@ Controller.prototype.handleScroll = function() {
 }
 
 $(function() {
+    Handlebars.registerHelper('truncate', function(options) {
+        var value = options.fn(this);
+        if(value.length > 255) {
+            var parts = value.split(' '),
+                part;
+            value = '';
+            while(parts) {
+                part = parts.shift();
+                if(value.length + part.length > 255) {
+                    value += '...';
+                    break;
+                } else {
+                    value += ' ' + part;
+                }
+            }
+        }
+        return value;
+    });
+    Handlebars.registerHelper('domain', function(options) {
+        var value = options.fn(this),
+            regex = /(?:https?://)?([^/]+).*/;
+        if(regex.test(value)) {
+            var match = regex.exec(value);
+            value = regex[1];
+        }
+        return value;
+    });
     $.debounce = function(func, wait) {
         var timeout;
         return function() {

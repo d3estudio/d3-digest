@@ -60,7 +60,7 @@
                 <a target="_blank" href="{{ url }}" alt="{{ title }}" title="{{ title }}">
                     <div class="content_meta">
                         <h2 class="content_tittle">{{ title }}</h2>
-                        <div class="content_url">{{ url|domain }}</div>
+                        <div class="content_url">{{#domain}}{{ url }}{{/domain}}</div>
                     </div>
                 </a>
             </div>
@@ -72,7 +72,7 @@
                 <a target="_blank" href="{{ url }}" alt="{{ title }}" title="{{ title }}">
                     <div class="content_meta">
                         <h2 class="content_tittle">{{ title }}</h2>
-                        <div class="content_description">{{ description|truncate }}</div>
+                        <div class="content_description">{{#truncate}}{{ description }}{{/truncate}}</div>
                     </div>
                 </a>
             </div>
