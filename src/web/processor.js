@@ -33,7 +33,7 @@ class Processor {
     }
 
     addMeta(result, doc) {
-        var copiable = ['user', 'date', 'channel'];
+        var copiable = ['user', 'date', 'channel', 'reactions'];
         var obj = doc[1];
         copiable.forEach((k) => result[k] = obj[k]);
         result.url = doc[0];
@@ -116,7 +116,7 @@ class Processor {
         var context = { users: [], items: [], itemsForUser: { } };
         result.forEach((i) => {
             i.reactions = Object.keys(i.reactions)
-                .map(r => ({ name: r, count: obj.reactions[r], repr: this.getEmojiUnicode(r) }))
+                .map(r => ({ name: r, count: i.reactions[r], repr: this.getEmojiUnicode(r) }))
                 .sort((a, b) => b.count - a.count);
 
             if(!context.users.some(u => u.username === i.user.username)) {
