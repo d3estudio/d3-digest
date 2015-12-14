@@ -25,15 +25,34 @@ systems({
             PORT: '2708',
         },
     },
-    'watcher': {
-        depends: ['db'],
+    'collector': {
+        depends: ['redis'],
         image: {'docker': 'azukiapp/node:5'},
         provision: [
             'npm install'
         ],
         workdir: '/azk/#{manifest.dir}',
         shell: '/bin/bash',
-        command: "node --use_strict src/watcher/main.js",
+        command: "node --use_strict src/collector/main.js",
+        wait: 20,
+        mounts: {
+            '/azk/#{manifest.dir}': sync('.'),
+            '/azk/#{manifest.dir}/node_modules': persistent('./node_modules'),
+        },
+        scalable: {'default': 1},
+        envs: {
+            NODE_ENV: 'dev',
+        },
+    },
+    'processor': {
+        depends: ['redis', 'db'],
+        image: {'docker': 'azukiapp/node:5'},
+        provision: [
+            'npm install'
+        ],
+        workdir: '/azk/#{manifest.dir}',
+        shell: '/bin/bash',
+        command: "node --use_strict src/processor/main.js",
         wait: 20,
         mounts: {
             '/azk/#{manifest.dir}': sync('.'),
@@ -74,6 +93,20 @@ systems({
         export_envs: {
             MEMCACHED_HOST: '#{net.host}',
             MEMCACHED_PORT: '#{net.port[11211]}'
+        }
+    },
+    'redis': {
+        image: { docker: 'redis' },
+        ports: {
+            http: '6379:6379/tcp'
+        },
+        http: {
+            domains: ['#{manifest.dir}-#{system.name}.#{azk.default_domain}']
+        },
+        export_envs: {
+            REDIS_URL: 'redis://#{manifest.dir}-#{system.name}.#{azk.default_domain}:#{net.port[6379]}',
+            REDIS_HOST: '#{net.host}',
+            REDIS_PORT: '#{net.port[6379]}'
         }
     }
 });
