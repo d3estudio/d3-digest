@@ -102,7 +102,7 @@ class Proc {
             msg.type = msg.subtype;
         }
 
-        if(this.checkedCalls.indexOf(msg.type) > -1 && !this.channelCheck(msg)) {
+        if(this.checkedCalls.indexOf(msg.type) > -1 && !this.channelCheck(msg.channel)) {
             callback();
             return;
         }
