@@ -15,7 +15,9 @@ var Controller = function() {
     });
     $('[data-template]').each(function() {
         var item = $(this);
-        that.templates[item.attr('data-template')] = Handlebars.compile(item.html());
+        item.attr('data-template').split(',').forEach(function(k) {
+            that.templates[k] = Handlebars.compile(item.html());
+        });
     });
 };
 
