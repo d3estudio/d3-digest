@@ -383,18 +383,17 @@ iframe{
 /**** Footer ****/
 footer{
     text-align: center;
-    background-color: rgba(11, 11, 11, .6);
     padding: 20px 0 20px;
 }
     footer nav a{
-        color: #fff;
+        color: #131313;
         font-family: 'PT Serif Caption', serif;
         font-style: italic;
         text-decoration: none;
     }
         footer nav a:after{
             content: " # ";
-            color: #ccc;
+            color: #414141;
         }
             footer nav a:last-child:after{
                 content: "";
