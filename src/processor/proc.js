@@ -56,7 +56,6 @@ class Proc {
     }
 
     loop() {
-        this.logger.verbose('Loop', 'Head.');
         this.redis.blpop('digest_process_queue', 0, (err, data) => {
             try {
                 this.logger.verbose('Proc', `Dequed: ${data}`);
@@ -77,7 +76,6 @@ class Proc {
             this.logger.error('Proc', 'Error caught: ');
             this.logger.error('Proc', ex);
         });
-        this.logger.verbose('Loop', 'Tail.');
     }
 
     channelCheck(chn) {
