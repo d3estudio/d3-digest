@@ -39,12 +39,16 @@ if(!settings.token) {
 process.env.SLACK_LOG_LEVEL = 'alert';
 
 var Slack = require('slack-client'),
+    Redis = require('ioredis'),
     Bot = require('./bot');
-logger.info('entrypoint', 'Connecting to Slack...');
-var slack = new Slack(settings.token, true, true);
 
+logger.verbose('entrypoint', `Connecting to Redis @ ${settings.redisUrl}`);
+var slack = new Slack(settings.token, true, true),
+    redis = new Redis(settings.redisUrl);
+
+logger.info('entrypoint', 'Connecting to Slack...');
 slack.on('open', () => {
-    var bot = new Bot(slack, logger, settings); //eslint-disable-line no-unused-vars
+    var bot = new Bot(slack, logger, settings, redis); //eslint-disable-line no-unused-vars
 })
 .on('error', err => logger.error('entrypoint', 'Error: ', err))
 .login();
