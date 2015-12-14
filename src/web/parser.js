@@ -29,7 +29,10 @@ class Parser {
                 } else {
                     this.logger.verbose('parser', `Acquired ${docs.length} documents`);
                     docs = docs
-                        .filter((d) => !this.settings.silencerEmojis.some((e) => d.text.indexOf(e) > -1))
+                        .filter((d) => {
+                            var reacts = Object.keys(d.reactions);
+                            return !this.settings.silencerEmojis.some((e) => reacts.indexOf(e) > -1);
+                        })
                         .filter((d) => {
                             var matches = [];
                             URI.withinString(d.text, function(u) {
