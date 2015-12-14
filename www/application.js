@@ -156,9 +156,8 @@ $(function() {
 
     var fadeStart  = 0,
         fadeUntil  = Math.max(1, screen.height / 2),
-        fading     = $('#page_cover header'),
-        pattern    = $('.cover_pattern'),
-        $document = $(document),
+        fadeTarget = $('#page_cover header, .cover_pattern'),
+        $document  = $(document),
         controller = new Controller(),
         scrollHandler = $.debounce(controller.handleScroll.bind(controller), 300);
     controller.load();
@@ -172,6 +171,6 @@ $(function() {
         } else if(offset <= fadeUntil) {
             opacity = 1 - offset / fadeUntil;
         }
-        $(fading, pattern).css('opacity', opacity);
+        fadeTarget.css('opacity', opacity);
     });
 });
