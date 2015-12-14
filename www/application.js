@@ -132,7 +132,7 @@ $(function() {
     });
     Handlebars.registerHelper('domain', function(options) {
         var value = options.fn(this),
-            regex = /(?:https?://)?([^/]+).*/;
+            regex = /(?:https?:\/\/)?([^\/]+).*/;
         if(regex.test(value)) {
             var match = regex.exec(value);
             value = regex[1];
