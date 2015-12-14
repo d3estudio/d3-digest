@@ -1,7 +1,8 @@
 var Datastore = require('nedb'),
     inflection = require('inflection'),
+    URI = require('urijs'),
     Settings = require('../shared/settings'),
-    Mongo = require('../shared/mongo')
+    Mongo = require('../shared/mongo');
 
 class Bot {
     constructor(slack, logger, settings) {
@@ -168,7 +169,11 @@ class Bot {
                 break;
             }
             this.logger.verbose('Loopr', `Message TS ${msg.message.ts} was edited.`);
-            matches = msg.message.text.match(this.settings.messageMatcherRegex);
+            matches = []
+            URI.withinString(msg.message.text, (u) => {
+                matches.push(u);
+                return u;
+            });
             if(matches && matches.length > 0) {
                 this.logger.verbose('Loopr', `Message TS ${msg.message.ts} still is eligible.`);
                 // Insert or update.
@@ -196,7 +201,11 @@ class Bot {
                 break;
             }
             if(msg.text) {
-                matches = msg.text.match(this.settings.messageMatcherRegex);
+                matches = [];
+                URI.withinString(msg.text, (u) => {
+                    matches.push(u);
+                    return u;
+                });
                 if(matches && matches.length > 0) {
                     this.collection.findOne({ ts: msg.ts })
                         .then((doc) => {

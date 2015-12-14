@@ -1,4 +1,5 @@
-var Processor = require('./processor');
+var Processor = require('./processor'),
+    URI = require('urijs');
 
 class Parser {
     constructor(logger, settings, plugins, mongo, memcached) {
@@ -29,19 +30,31 @@ class Parser {
                     this.logger.verbose('parser', `Acquired ${docs.length} documents`);
                     docs = docs
                         .filter((d) => !this.settings.silencerEmojis.some((e) => d.text.indexOf(e) > -1))
-                        .filter((d) => d.text.match(this.settings.messageMatcherRegex));
+                        .filter((d) => {
+                            var matches = [];
+                            URI.withinString(d.text, function(u) {
+                                matches.push(u);
+                                return u;
+                            });
+                            return matches.length > 0;
+                        });
                     if(docs.length < 1) {
                         this.logger.verbose('parser', 'No valid documents in range.');
                         callback(null, null);
                     } else {
                         docs = docs.map((d) => {
-                            var url = d.text.match(this.settings.messageMatcherRegex)[0],
-                                match = slackUrlSeparator.exec(url);
-                            if(match) {
-                                url = match[1];
+                            var url = null;
+                            URI.withinString(d.text, (u) => {
+                                url = url || u;
+                                return u;
+                            });
+                            if(!url) {
+                                this.logger.verbose('parser', 'Skipping document id ' + d._id);
+                                return null;
                             }
                             return [url, d];
-                        });
+                        })
+                        .filter((d) => d);
                         this.logger.verbose('parser', `Handling ${docs.length} document(s) to processor...`);
                         var processor = new Processor(this.settings, this.logger, this.plugins, this.memcached, docs);
                         processor.process((err, result) => {

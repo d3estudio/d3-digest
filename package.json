@@ -42,7 +42,8 @@
     "open-graph": "git+https://git@github.com/victorgama/node-open-graph.git",
     "slack-client": "^1.4.1",
     "thenBy.js": "git+https://git@github.com/Teun/thenBy.js.git",
-    "unfurl-url": "^1.0.0"
+    "unfurl-url": "^1.0.0",
+    "urijs": "^1.17.0"
   },
   "devDependencies": {
     "eslint": "^1.10.2"
