@@ -38,9 +38,6 @@ class Processor {
         copiable.forEach((k) => result[k] = obj[k]);
         result.url = doc[0];
         result.id = obj._id;
-        result.reactions = Object.keys(obj.reactions)
-            .map(r => ({ name: r, count: obj.reactions[r], repr: this.getEmojiUnicode(r) }))
-            .sort((a, b) => b.count - a.count);
         this.memcached.set(['d-', doc[1].ts].join(''), JSON.stringify(result), 2592000, (err) => {
             if(err) {
                 this.logger.error('memcached', 'Error storing cache data: ', err);
@@ -91,7 +88,9 @@ class Processor {
                     }
                     processable.push(item);
                 } else {
-                    cached.push(JSON.parse(r));
+                    var c = JSON.parse(r);
+                    c.reactions = item[1].reactions;
+                    cached.push(c);
                 }
                 this.getCached(processable, cached, callback);
             });
@@ -116,6 +115,10 @@ class Processor {
     digest(result, callback) {
         var context = { users: [], items: [], itemsForUser: { } };
         result.forEach((i) => {
+            i.reactions = Object.keys(i.reactions)
+                .map(r => ({ name: r, count: obj.reactions[r], repr: this.getEmojiUnicode(r) }))
+                .sort((a, b) => b.count - a.count);
+
             if(!context.users.some(u => u.username === i.user.username)) {
                 context.users.push(i.user);
             }
