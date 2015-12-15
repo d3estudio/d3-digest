@@ -21,6 +21,31 @@ var Controller = function() {
     });
 };
 
+Controller.prototype.supportsEmojiNatively = function() {
+    if (typeof(navigator) !== 'undefined') {
+        var ua = navigator.userAgent;
+        if (ua.match(/(iPhone|iPod|iPad|iPhone\s+Simulator)/i)) {
+            if (ua.match(/OS\s+[12345]/i)) {
+                return true;
+            }
+            if (ua.match(/OS\s+[6789]/i)) {
+                return true;
+            }
+        }
+        if (ua.match(/Mac OS X 10[._ ](?:[789]|1\d)/i)) {
+            if (!ua.match(/Chrome/i) && !ua.match(/Firefox/i)) {
+                return true;
+            }
+        }
+        if (ua.match(/Windows NT 6.[1-9]/i) || ua.match(/Windows NT 10.[0-9]/i)) {
+            if (!ua.match(/Chrome/i) && !ua.match(/MSIE 8/i)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 Controller.prototype.render = function(item) {
     var result = '';
     if(!this.templates[item.type]) {
@@ -57,6 +82,15 @@ Controller.prototype.fixEmbeds = function(items) {
             $('.grid').isotope('layout');
         });
     }, 1000);
+}
+
+Controller.prototype.fixEmojis = function() {
+    if(!window.supportsEmojiNatively) {
+        window.supportsEmojiNatively = this.supportsEmojiNatively();
+    }
+    if(!window.supportsEmojiNatively) {
+        twemoji.parse(document.body);
+    }
 }
 
 Controller.prototype.load = function() {
@@ -100,6 +134,7 @@ Controller.prototype.load = function() {
                 $grid.isotope('insert', result);
             }
             this.fixEmbeds(result);
+            this.fixEmojis();
         }.bind(this))
         .fail(function() {
             this.waiting = false;
