@@ -1,14 +1,16 @@
 var async = require('async'),
     Path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    request = require('request');
 
 class Processor {
-    constructor(settings, logger, plugins, memcached, items) {
+    constructor(settings, logger, plugins, memcached, emojiCollection, items) {
         this.settings = settings;
         this.logger = logger;
         this.plugins = plugins;
         this.items = items;
         this.memcached = memcached;
+        this.emojiCollection = emojiCollection;
         if(!Processor.emojis) {
             try {
                 Processor.emojis = JSON.parse(fs.readFileSync(Path.join(__dirname, 'emoji', 'db.json')));
@@ -19,15 +21,29 @@ class Processor {
         }
     }
 
-    getEmojiUnicode(name) {
-        var result = name;
+    getEmojiUnicode(name, reentry) {
+        var result = null;
         if(Processor.emojis) {
             var item = Processor.emojis.find((e) => e.aliases.indexOf(name) > -1);
             if(item) {
                 result = item.emoji;
-            } else {
-                this.logger.warn('getEmojiUnicode', `Unknown emoji: ${name}`);
             }
+        }
+        if(!reentry && !result && Processor.extraEmoji) {
+            var emo = Processor.extraEmoji[name];
+            if(!emo && (!Processor.lastEmojiUpdate || (Date.now() - Processor.lastEmojiUpdate) > 360000)) {
+                this.updateCustomEmojis();
+            } else {
+                if(emo.indexOf('http') === -1) {
+                    emo = getEmojiUnicode(emo, true);
+                } else {
+                    emo = `<img src="${emo}" />`;
+                }
+                result = emo;
+            }
+        }
+        if(reentry && !result) {
+            this.logger.warn('getEmojiUnicode', `Unknown emoji ${name}. Sources exhausted.`);
         }
         return result;
     }
@@ -97,17 +113,84 @@ class Processor {
         }
     }
 
-    process(callback) {
-        var processable = [],
-            cached = [];
-        this.getCached(processable, cached, () => {
-            this.logger.verbose('processor', `Process result: ${cached.length} cached item(s), ${processable.length} processable items.`);
-            async.map(processable, this.runPlugins.bind(this), (err, result) => {
-                if(err) {
-                    this.logger.error('processor', 'Error running async plugns:', err);
+    ensureEmojiCollection(then) {
+        if(!Processor.extraEmoji) {
+            this.emojiCollection.find().toArray((err, docs) => {
+                var emojis = {};
+                docs.forEach(function(i) {
+                    emojis[i.name] = i.value;
+                });
+                Processor.extraEmoji = emojis;
+                this.normaliseEmojiAliases();
+                then();
+            });
+        } else {
+            then();
+        }
+    }
+
+    normaliseEmojiAliases() {
+        var emojis = Processor.extraEmoji;
+        Object.keys(emojis)
+            .forEach(function(k) {
+                var value = emojis[k];
+                if(value.indexOf('alias') === 0) {
+                    value = emojis[value.split(':')[1]]
+                    emojis[k] = value;
                 }
-                result = (result || []).filter((r) => r);
-                this.digest([].concat(cached, result), callback);
+            });
+    }
+
+    updateCustomEmojis() {
+        this.logger.verbose('updateCustomEmojis', 'Updating custom emojis...');
+        request.get(`https://slack.com/api/emoji.list?token=${this.settings.token}`, (e, r, body) => {
+            if(!e) {
+                try {
+                    var data = JSON.parse(body);
+                    if(data.ok) {
+                        var emoji = data.emoji;
+                        Object.keys(emoji).forEach((k) => {
+                            this.emojiCollection.findAndModify(
+                                { name: k }, /* Query */
+                                [], /* Sort */
+                                { value: emoji[k], name: k }, /* Values */
+                                { new: true, upsert: true }, /* Options */
+                                function() { } /* Noop */
+                            );
+                            if(!Processor.extraEmoji) {
+                                Processor.extraEmoji = {};
+                            }
+                            Processor.extraEmoji[k] = emoji[k];
+                        });
+                        this.normaliseEmojiAliases();
+                        Processor.lastEmojiUpdate = Date.now();
+                    } else {
+                        this.logger.error('updateCustomEmojis', 'Request failed: Invalid payload.');
+                    }
+                } catch(ex) {
+                    this.logger.error('updateCustomEmojis', 'Error requesting:');
+                    this.logger.error('updateCustomEmojis', ex);
+                }
+            } else {
+                this.logger.error('updateCustomEmojis', 'Request failed:');
+                this.logger.error('updateCustomEmojis', e);
+            }
+        });
+    }
+
+    process(callback) {
+        this.ensureEmojiCollection(() => {
+            var processable = [],
+                cached = [];
+            this.getCached(processable, cached, () => {
+                this.logger.verbose('processor', `Process result: ${cached.length} cached item(s), ${processable.length} processable items.`);
+                async.map(processable, this.runPlugins.bind(this), (err, result) => {
+                    if(err) {
+                        this.logger.error('processor', 'Error running async plugns:', err);
+                    }
+                    result = (result || []).filter((r) => r);
+                    this.digest([].concat(cached, result), callback);
+                });
             });
         });
     }

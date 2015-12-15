@@ -56,7 +56,7 @@ class Parser {
                         })
                         .filter((d) => d);
                         this.logger.verbose('parser', `Handling ${docs.length} document(s) to processor...`);
-                        var processor = new Processor(this.settings, this.logger, this.plugins, this.memcached, docs);
+                        var processor = new Processor(this.settings, this.logger, this.plugins, this.memcached, db.collection('emojis'), docs);
                         processor.process((err, result) => {
                             callback(err, result)
                         });
