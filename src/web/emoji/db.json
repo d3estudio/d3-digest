@@ -8122,6 +8122,15 @@
     ]
   }
 , {
+    "emoji": "🙄"
+  , "description": "face with rolling eyes"
+  , "aliases": [
+      "face_with_rolling_eyes"
+    ]
+  , "tags": [
+    ]
+  }
+, {
     "aliases": [
       "basecamp"
     ]
