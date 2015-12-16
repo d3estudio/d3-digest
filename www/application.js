@@ -176,3 +176,105 @@ $(function() {
         fadeTarget.css('opacity', opacity);
     });
 });
+
+
+
+
+
+
+// CANVAS
+
+
+
+
+
+var globalID_01;
+var canvas_square01 = document.getElementById("canvas_square01");
+var ctx_square01 = canvas_square01.getContext("2d");
+
+canvas_square01.width  = $(window).width();
+canvas_square01.height = $(window).height();
+
+$( window ).on("resize", function(){
+    canvas_square01.width  = $(window).width();
+});
+
+var W_square01 = $(window).width();
+var H_square01 = $(window).height();
+
+var particles_square01 = [];
+
+for(var i = 0; i < 200; i++)
+{
+    //This will add 50 particles_square01 to the array with random positions
+    particles_square01.push(new create_particle_square01());
+}
+    if (!window.requestAnimationFrame) {
+
+                window.requestAnimationFrame = ( function() {
+
+                      return  window.requestAnimationFrame       ||
+                              window.webkitRequestAnimationFrame ||
+                              window.mozRequestAnimationFrame    ||
+                              window.oRequestAnimationFrame      ||
+                              window.msRequestAnimationFrame     ||
+                              function( callback ){
+                                window.setTimeout(callback, 1000 / 60);
+                              };
+    })();
+}
+//Lets create a function which will help us to create multiple particles_square01
+function create_particle_square01()
+{
+    //Random position on the canvas_square01
+    this.x = Math.random()*W_square01;
+    this.y = Math.random()*H_square01;
+
+    this.vx = Math.random()*1-0.5;
+    this.vy = Math.random()*1-0.5;
+    var colors_square01 = ['rgba(212,9,76,0.8)', 'rgba(174,210,163,0.7)', 'rgba(252,245,198,0.7)'];
+    //var colors_square01 = ['rgba(69,90,184,0.7)', 'rgba(8,223,180,0.7)', 'rgba(244,72,112,0.7)', 'rgba(227,45,99,0.7)'];
+    this.color =colors_square01[Math.round(Math.random()*3)];
+
+    // Distort
+    this.ru = Math.random()*1000+40;
+    this.rd = Math.random()*60+30;
+    this.ld = Math.random()*60+30;
+    this.lu = Math.random()*60+30;
+}
+
+
+function draw_square01(){
+    ctx_square01.fillStyle = 'rgba(166,59,85,1)';
+    ctx_square01.fillRect(0, 0, W_square01, H_square01);
+    ctx_square01.globalCompositeOperatin
+    for(var t = 0; t < particles_square01.length; t++)
+    {
+        var p_square01 = particles_square01[t];
+
+        ctx_square01.beginPath();
+
+
+        ctx_square01.moveTo(p_square01.x - p_square01.lu, p_square01.y - p_square01.lu);
+        ctx_square01.lineTo(p_square01.x + 10 + p_square01.ru, p_square01.y - p_square01.ru);
+        ctx_square01.lineTo(p_square01.x + 10 + p_square01.rd, p_square01.y + 10 + p_square01.rd);
+        ctx_square01.lineTo(p_square01.x - p_square01.rd, p_square01.y + 10 + p_square01.rd);
+        ctx_square01.fillStyle = p_square01.color;
+        ctx_square01.fill();
+
+        p_square01.x += p_square01.vx;
+        p_square01.y += p_square01.vy;
+
+        if(p_square01.x < -150) p_square01.x = W_square01+150;
+        if(p_square01.y < -150) p_square01.y = H_square01+150;
+        if(p_square01.x > W_square01+150) p_square01.x = -150;
+        if(p_square01.y > H_square01+150) p_square01.y = -150;
+    }
+    window.requestAnimationFrame(draw_square01);
+}
+
+function animate_square01(){
+    globalID_01 = window.requestAnimationFrame(draw_square01);
+}
+animate_square01()
+
