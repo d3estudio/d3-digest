@@ -7,6 +7,7 @@ var Controller = function() {
     this.$ = $(this);
     this.window = $(window);
     this.document = $(document);
+    this.content = $('#page_content');
     var that = this;
     $('[data-template-partial]:not([data-registered])').each(function() {
         var item = $(this);
@@ -148,6 +149,15 @@ Controller.prototype.handleScroll = function() {
     }
 }
 
+Controller.prototype.fixHeaderHeight = function() {
+    this.content.css({
+        paddingTop: this.window.outerHeight()
+    });
+    this.window.resize($.debounce(function() {
+        this.fixHeaderHeight()
+    }.bind(this), 300));
+}
+
 $(function() {
     Handlebars.registerHelper('truncate', function(options) {
         var value = options.fn(this);
@@ -176,6 +186,7 @@ $(function() {
         }
         return value;
     });
+
     $.debounce = function(func, wait) {
         var timeout;
         return function() {
@@ -198,6 +209,7 @@ $(function() {
         controller = new Controller(),
         scrollHandler = $.debounce(controller.handleScroll.bind(controller), 300);
     controller.load();
+    controller.fixHeaderHeight();
 
     $(window).scroll(function() {
         scrollHandler();
