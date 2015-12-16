@@ -178,15 +178,7 @@ $(function() {
 });
 
 
-
-
-
-
 // CANVAS
-
-
-
-
 
 var globalID_01;
 var canvas_square01 = document.getElementById("canvas_square01");
@@ -232,9 +224,12 @@ function create_particle_square01()
 
     this.vx = Math.random()*1-0.5;
     this.vy = Math.random()*1-0.5;
+
     var colors_square01 = ['rgba(212,9,76,0.8)', 'rgba(174,210,163,0.7)', 'rgba(252,245,198,0.7)'];
     //var colors_square01 = ['rgba(69,90,184,0.7)', 'rgba(8,223,180,0.7)', 'rgba(244,72,112,0.7)', 'rgba(227,45,99,0.7)'];
     this.color =colors_square01[Math.round(Math.random()*3)];
+
+//  Verificar velocidade com scroll
 
     // Distort
     this.ru = Math.random()*1000+40;
@@ -264,6 +259,15 @@ function draw_square01(){
 
         p_square01.x += p_square01.vx;
         p_square01.y += p_square01.vy;
+
+
+        var height = $(window).scrollTop();
+
+        if(height  > 500) {
+            p_square01.x -= p_square01.vx;
+            p_square01.y -= p_square01.vy;
+        }
+
 
         if(p_square01.x < -150) p_square01.x = W_square01+150;
         if(p_square01.y < -150) p_square01.y = H_square01+150;

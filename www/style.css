@@ -57,7 +57,8 @@ canvas { position: fixed; }
     text-shadow: 0px 0px 30px rgba(0, 0, 0, 0.7);
 }
     .cover_pattern{
-        /*background-image: url("images/bg_pattern.png");*/
+        background-image: url("images/bg_pattern.png");
+        /*opacity: 0.2;*/
 
     }
         #page_cover, .cover_pattern{
@@ -80,6 +81,8 @@ canvas { position: fixed; }
         left: 50%;
         top: 50%;
         transform: translate(-50%, -190px);
+
+        z-index: 9999;
         /*border: solid 1px blue;*/
     }
         .d3_logo{
