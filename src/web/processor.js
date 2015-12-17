@@ -67,10 +67,7 @@ class Processor {
         var plug = this.plugins[index];
         if(!plug) {
             // Plugin list is over, and yet document could not be processed.
-            callback(null, this.addMeta({
-                type: 'poor-link',
-                url: doc[0]
-            }, doc));
+            callback(null, null);
             return;
         } else {
             if(plug.canHandle(doc[0])) {
