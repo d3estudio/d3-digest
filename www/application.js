@@ -101,12 +101,12 @@ Controller.prototype.load = function() {
     this.$.trigger('loading');
     this.waiting = true;
     $.ajax({
-            url: this.firstCall ? '/api/latest' : ['/api/from/', this.from].join(''),
+            url: this.firstCall ? '/api/latest' : ['/api/skip/', this.next].join(''),
             method: 'GET',
             type: 'json'
         })
         .done(function(data) {
-            this.from = data.from;
+            this.next = data.next;
             this.$.trigger('loaded');
             this.waiting = false;
             if(!data.items) {
