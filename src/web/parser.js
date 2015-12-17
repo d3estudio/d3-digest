@@ -45,7 +45,7 @@ class Parser {
             var query = {},
                 opts = {
                     limit: this.settings.outputLimit,
-                    sort: '_id'
+                    sort: 'date'
                 };
             if(!this.settings.showLinksWithoutReaction) {
                 query.$where = 'Object.keys(this.reactions).length > 0';
