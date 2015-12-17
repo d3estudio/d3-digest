@@ -12,8 +12,10 @@ end
 items = {}
 data.each do |raw_emoji|
     unless items.include? raw_emoji['unified']
+        repr = raw_emoji['unified']
+        repr = raw_emoji['variations'][0] if raw_emoji['variations'].length == 1
         items[raw_emoji['unified']] = {
-            emoji: "#{map_unified(raw_emoji['unified'])}",
+            emoji: "#{map_unified(repr)}",
             aliases: []
         }
     end
