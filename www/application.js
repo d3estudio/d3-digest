@@ -149,6 +149,7 @@ Controller.prototype.handleScroll = function() {
     }
 }
 
+
 Controller.prototype.fixHeaderHeight = function() {
     this.content.css({
         paddingTop: this.window.outerHeight()
@@ -157,6 +158,105 @@ Controller.prototype.fixHeaderHeight = function() {
         this.fixHeaderHeight()
     }.bind(this), 300));
 }
+
+// CANVAS
+
+var Animation = function() {
+    this.animationFrame = undefined;
+    this.canvas_square01 = document.getElementById('canvas_square01');
+    this.ctx_square01 = canvas_square01.getContext('2d');
+    this.$window = $(window);
+    canvas_square01.width  = this.$window.width();
+    canvas_square01.height = this.$window.height();
+    this.W_square01 = this.$window.width();
+    this.H_square01 = this.$window.height();
+    this.particles_square01 = [];
+    this.edges = [1000, 50];
+    this.edgeSize = this.edges[Math.floor(Math.random() * this.edges.length)];
+    this.$window.resize(function(){
+        this.canvas_square01.width = this.$window.width();
+    }.bind(this));
+    for(var i = 0; i < 200; i++)
+    {
+        //This will add 50 particles_square01 to the array with random positions
+        this.particles_square01.push(new AnimationSquare(this.W_square01, this.H_square01, this.edgeSize));
+    }
+    if (!window.requestAnimationFrame) {
+        window.requestAnimationFrame = (function() {
+            return  window.requestAnimationFrame       ||
+                    window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame    ||
+                    window.oRequestAnimationFrame      ||
+                    window.msRequestAnimationFrame     ||
+                    function(callback){
+                        window.setTimeout(callback, 1000 / 60);
+                    };
+        })();
+    }
+};
+
+Animation.prototype.draw = function() {
+    this.ctx_square01.fillStyle = 'rgba(166,59,85,1)';
+    this.ctx_square01.fillRect(0, 0, this.W_square01, this.H_square01);
+    var p_square01, height;
+    for(var t = 0; t < this.particles_square01.length; t++)
+    {
+        p_square01 = this.particles_square01[t];
+
+        this.ctx_square01.beginPath();
+
+
+        this.ctx_square01.moveTo(p_square01.x - p_square01.lu, p_square01.y - p_square01.lu);
+        this.ctx_square01.lineTo(p_square01.x + 10 + p_square01.ru, p_square01.y - p_square01.ru);
+        this.ctx_square01.lineTo(p_square01.x + 10 + p_square01.rd, p_square01.y + 10 + p_square01.rd);
+        this.ctx_square01.lineTo(p_square01.x - p_square01.rd, p_square01.y + 10 + p_square01.rd);
+        this.ctx_square01.fillStyle = p_square01.color;
+        this.ctx_square01.fill();
+
+        p_square01.x += p_square01.vx;
+        p_square01.y += p_square01.vy;
+
+
+        height = this.$window.scrollTop();
+
+        if(height  > 500) {
+            p_square01.x -= p_square01.vx;
+            p_square01.y -= p_square01.vy;
+        }
+
+
+        if(p_square01.x < -150) p_square01.x = this.W_square01 + 150;
+        if(p_square01.y < -150) p_square01.y = this.H_square01 + 150;
+        if(p_square01.x > this.W_square01 + 150) p_square01.x = -150;
+        if(p_square01.y > this.H_square01 + 150) p_square01.y = -150;
+    }
+    window.requestAnimationFrame(this.draw.bind(this));
+};
+
+Animation.prototype.start = function() {
+    if(!this.globalID_01) {
+        this.globalID_01 = window.requestAnimationFrame(this.draw.bind(this));
+    }
+};
+
+var AnimationSquare = function(width, height, edge)
+{
+    //Random position on the canvas_square01
+    this.x = Math.random() * width;
+    this.y = Math.random() * height;
+
+    this.vx = Math.random() - 0.5;
+    this.vy = Math.random() - 0.5;
+
+    var colors_square01 = ['rgba(212,9,76,0.8)', 'rgba(174,210,163,0.7)', 'rgba(252,245,198,0.7)'];
+    this.color = colors_square01[Math.round(Math.random()*3)];
+
+    // Distort
+    this.ru = Math.random() * edge + 40;
+    this.rd = Math.random() * 60 + 30;
+    this.ld = Math.random() * 60 + 30;
+    this.lu = Math.random() * 60 + 30;
+};
 
 $(function() {
     Handlebars.registerHelper('truncate', function(options) {
@@ -207,7 +307,14 @@ $(function() {
         fadeTarget = $('#page_cover header, .cover_pattern'),
         $document  = $(document),
         controller = new Controller(),
-        scrollHandler = $.debounce(controller.handleScroll.bind(controller), 300);
+        scrollHandler = $.debounce(controller.handleScroll.bind(controller), 300),
+        animation;
+
+    if($('html').is('.canvas')) {
+        animation = new Animation();
+        animation.start();
+    };
+
     controller.load();
     controller.fixHeaderHeight();
 
