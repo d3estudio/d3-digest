@@ -129,7 +129,13 @@ class Proc {
                             if(doc.reactions[reaction] === 0) {
                                 delete doc.reactions[reaction];
                             }
-                            this.collection.replaceOne({ _id: doc._id }, doc, () => callback());
+                            this.collection.replaceOne({ _id: doc._id }, doc, () => {
+                                this.redis.publish('digest_notifications', JSON.stringify({
+                                    type: 'precache_item',
+                                    ts: doc.ts
+                                }));
+                                callback();
+                            });
                         } else {
                             callback();
                         }
