@@ -11,7 +11,8 @@
     "digest"
   ],
   "contributors": [
-    "Kaio Medau <kaio@d3.do>"
+    "Kaio Medau <kaio@d3.do>",
+    "Junior Magalhães <junior@d3.do>"
   ],
   "homepage": "http://d3.do/weekly-digest",
   "bugs": {
