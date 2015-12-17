@@ -1,3 +1,4 @@
+// Marked to removal
 var MongoClient = require('mongodb').MongoClient;
 
 class Mongo {
@@ -22,27 +23,21 @@ class Mongo {
     }
 
     perform(func) {
-        this.queue.push(func);
-        if(!this.performing && this.isConnected()) {
-            this.performing = true;
-            this._processQueue();
+        if(!this.driver) {
+            this.queue.push(func);
+        } else {
+            func(this.driver, function() {});
         }
     }
 
     _processQueue() {
-        var func = this.queue.shift();
-        if(!func) {
-            this.performing = false;
-            return;
-        } else {
+        this.queue.forEach((func) => {
             try {
-                func(this.driver, this._processQueue.bind(this));
+                func(this.driver, function() {});
             } catch(ex) {
                 this.logger.error('Mongo', 'Error performing operation: ', ex);
-                this.logger.error('Mongo', 'Resuming...');
-                this._processQueue();
             }
-        }
+        });
     }
 }
 
