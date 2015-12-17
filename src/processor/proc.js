@@ -30,14 +30,14 @@ class Proc {
             releaseTime = null,
             valid = true,
             id = this.procId++,
-            timeout;
+            tout;
         var invalidate = () => {
             this.logger.warn(`Proc#${id}`, `Last procedure #${id} took longer than ${timeout}ms. Releasing loop...`);
             valid = false;
             callback();
         }
         var callback = () => {
-            clearTimeout(timeout);
+            clearTimeout(tout);
             if(!released) {
                 if(valid) {
                     this.logger.verbose(`Proc#${id}`, 'Completed.');
@@ -50,7 +50,7 @@ class Proc {
                 this.logger.warn(`Proc#${id}`, `Reentry attempt after ${now - releaseTime}ms.`);
             }
         };
-        timeout = setTimeout(timeout, invalidate);
+        tout = setTimeout(invalidate, timeout);
         this.logger.verbose(`Proc#${id}`, 'Starting');
         func(callback);
     }
@@ -60,7 +60,7 @@ class Proc {
             try {
                 this.logger.verbose('Proc', `Dequed: ${data}`);
                 data = JSON.parse(data[1]);
-                this.waitForProcess((callback) => this.process(data, callback));
+                this.waitForProcess((callback) => this.process(data, callback), 30000);
             } catch(ex) {
                 this.logger.error('Proc', 'Error processing data: ');
                 this.logger.error('Proc', ex);
@@ -83,11 +83,7 @@ class Proc {
             this.logger.warn('channelCheck', 'Received empty or false-y chn: ', chn);
             return false;
         }
-        var exists = this.channels.indexOf(chn) > -1;
-        if(!exists) {
-            this.quietLoop = true;
-        }
-        return exists;
+        return this.channels.indexOf(chn) > -1;
     }
 
     process(msg, callback) {
