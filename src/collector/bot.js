@@ -83,7 +83,7 @@ class Bot {
 
     enqueue(msg) {
         var serializable = {};
-        var fields = ['channel', 'team', 'text', 'ts', 'type', 'user', 'event_ts', 'item', 'reaction', 'subtype', 'message'];
+        var fields = ['channel', 'team', 'text', 'ts', 'type', 'user', 'event_ts', 'item', 'reaction', 'subtype', 'message', 'deleted_ts'];
         fields.forEach((k) => {
             if(msg.hasOwnProperty(k)) {
                 serializable[k] = msg[k];
