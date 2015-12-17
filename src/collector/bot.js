@@ -58,7 +58,8 @@ class Bot {
 
         slack
             .on('raw_message', msg => this.guard(() => this.onRawMessage(msg)))
-            .on('message', msg => this.guard(() => this.enqueue(msg)));
+            .on('message', msg => this.guard(() => this.enqueue(msg)))
+            .on('emoji_changed', msg => this.guard(() => this.notifyEmojiChange()));
     }
 
     guard(func) {
@@ -68,6 +69,10 @@ class Bot {
             this.logger.error('guard', 'Caught excaption:');
             this.logger.error('guard', ex);
         }
+    }
+
+    notifyEmojiChange() {
+        this.redis.publish('digest_notifications', JSON.stringify({ type: 'emoji_changed' }));
     }
 
     onRawMessage(msg) {
@@ -106,7 +111,7 @@ class Bot {
 
         if(Object.keys(msg).length > 0) {
             var serialized = JSON.stringify(serializable);
-            this.logger.verbose('collector', `rpusing to digest_process_queue: ${serialized}`);
+            this.logger.verbose('collector', `rpushing to digest_process_queue: ${serialized}`);
             this.redis.rpush('digest_process_queue', serialized);
         }
 
