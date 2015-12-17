@@ -1,6 +1,6 @@
 systems({
     'web': {
-        depends: ['db', 'memcached'],
+        depends: ['db', 'memcached', 'redis'],
         image: {'docker': 'azukiapp/node:5'},
         provision: [
             'npm install'

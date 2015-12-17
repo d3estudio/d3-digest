@@ -1,6 +1,8 @@
 var async = require('async'),
     Path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    request = require('request'),
+    logger = require('npmlog');
 
 class Processor {
     constructor(settings, logger, plugins, memcached, items) {
@@ -19,15 +21,29 @@ class Processor {
         }
     }
 
-    getEmojiUnicode(name) {
-        var result = name;
+    getEmojiUnicode(name, reentry) {
+        var result = null;
         if(Processor.emojis) {
             var item = Processor.emojis.find((e) => e.aliases.indexOf(name) > -1);
             if(item) {
                 result = item.emoji;
-            } else {
-                this.logger.warn('getEmojiUnicode', `Unknown emoji: ${name}`);
             }
+        }
+        if(!reentry && !result && Processor.extraEmoji) {
+            var emo = Processor.extraEmoji[name];
+            if(!emo && (!Processor.lastEmojiUpdate || (Date.now() - Processor.lastEmojiUpdate) > 360000)) {
+                Processor.updateCustomEmojis(this.settings);
+            } else {
+                if(emo.indexOf('http') === -1) {
+                    emo = getEmojiUnicode(emo, true);
+                } else {
+                    emo = `<img src="${emo}" />`;
+                }
+                result = emo;
+            }
+        }
+        if(reentry && !result) {
+            this.logger.warn('getEmojiUnicode', `Unknown emoji ${name}. Sources exhausted.`);
         }
         return result;
     }
@@ -51,10 +67,7 @@ class Processor {
         var plug = this.plugins[index];
         if(!plug) {
             // Plugin list is over, and yet document could not be processed.
-            callback(null, this.addMeta({
-                type: 'poor-link',
-                url: doc[0]
-            }, doc));
+            callback(null, null);
             return;
         } else {
             if(plug.canHandle(doc[0])) {
@@ -97,17 +110,87 @@ class Processor {
         }
     }
 
-    process(callback) {
-        var processable = [],
-            cached = [];
-        this.getCached(processable, cached, () => {
-            this.logger.verbose('processor', `Process result: ${cached.length} cached item(s), ${processable.length} processable items.`);
-            async.map(processable, this.runPlugins.bind(this), (err, result) => {
-                if(err) {
-                    this.logger.error('processor', 'Error running async plugns:', err);
+    static ensureEmojiCollection(then) {
+        if(!Processor.extraEmoji) {
+            Processor.emojiCollection.find().toArray((err, docs) => {
+                var emojis = {};
+                docs.forEach(function(i) {
+                    emojis[i.name] = i.value;
+                });
+                Processor.extraEmoji = emojis;
+                Processor.normaliseEmojiAliases();
+                then();
+            });
+        } else {
+            then();
+        }
+    }
+
+    static normaliseEmojiAliases() {
+        logger.verbose('normaliseEmojiAliases', 'Starting...');
+        var emojis = Processor.extraEmoji;
+        Object.keys(emojis)
+            .forEach(function(k) {
+                var value = emojis[k];
+                if(value.indexOf('alias') === 0) {
+                    value = emojis[value.split(':')[1]]
+                    emojis[k] = value;
                 }
-                result = (result || []).filter((r) => r);
-                this.digest([].concat(cached, result), callback);
+            });
+        logger.verbose('normaliseEmojiAliases', 'Completed.');
+    }
+
+    static updateCustomEmojis(settings) {
+        logger.verbose('updateCustomEmojis', 'Updating custom emojis...');
+        request.get(`https://slack.com/api/emoji.list?token=${settings.token}`, (e, r, body) => {
+            if(!e) {
+                try {
+                    var data = JSON.parse(body);
+                    if(data.ok) {
+                        var emoji = data.emoji;
+                        Object.keys(emoji).forEach((k) => {
+                            Processor.emojiCollection.findAndModify(
+                                { name: k }, /* Query */
+                                [], /* Sort */
+                                { value: emoji[k], name: k }, /* Values */
+                                { new: true, upsert: true }, /* Options */
+                                function() { } /* Noop */
+                            );
+                            if(!Processor.extraEmoji) {
+                                Processor.extraEmoji = {};
+                            }
+                            Processor.extraEmoji[k] = emoji[k];
+                        });
+                        logger.verbose('updateCustomEmojis', `${Object.keys(emoji).length} emoji(s) processed.`);
+                        Processor.normaliseEmojiAliases();
+                        Processor.lastEmojiUpdate = Date.now();
+                    } else {
+                        logger.error('updateCustomEmojis', 'Request failed: Invalid payload.');
+                    }
+                } catch(ex) {
+                    logger.error('updateCustomEmojis', 'Error requesting:');
+                    logger.error('updateCustomEmojis', ex);
+                }
+            } else {
+                logger.error('updateCustomEmojis', 'Request failed:');
+                logger.error('updateCustomEmojis', e);
+            }
+        });
+    }
+
+    process(callback) {
+        Processor.ensureEmojiCollection(() => {
+            var processable = [],
+                cached = [];
+            this.getCached(processable, cached, () => {
+                this.logger.verbose('processor', `Process result: ${cached.length} cached item(s), ${processable.length} processable items.`);
+                async.map(processable, this.runPlugins.bind(this), (err, result) => {
+                    if(err) {
+                        this.logger.error('processor', 'Error running async plugns:', err);
+                    }
+                    result = (result || []).filter((r) => r);
+                    this.digest([].concat(cached, result), callback);
+                });
             });
         });
     }

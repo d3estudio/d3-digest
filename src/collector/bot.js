@@ -58,7 +58,8 @@ class Bot {
 
         slack
             .on('raw_message', msg => this.guard(() => this.onRawMessage(msg)))
-            .on('message', msg => this.guard(() => this.enqueue(msg)));
+            .on('message', msg => this.guard(() => this.enqueue(msg)))
+            .on('emoji_changed', msg => this.guard(() => this.notifyEmojiChange()));
     }
 
     guard(func) {
@@ -70,6 +71,10 @@ class Bot {
         }
     }
 
+    notifyEmojiChange() {
+        this.redis.publish('digest_notifications', JSON.stringify({ type: 'emoji_changed' }));
+    }
+
     onRawMessage(msg) {
         if(msg.type.startsWith('reaction_') || msg.type === 'group_joined') {
             this.enqueue(msg);
@@ -78,7 +83,7 @@ class Bot {
 
     enqueue(msg) {
         var serializable = {};
-        var fields = ['channel', 'team', 'text', 'ts', 'type', 'user', 'event_ts', 'item', 'reaction', 'subtype', 'message'];
+        var fields = ['channel', 'team', 'text', 'ts', 'type', 'user', 'event_ts', 'item', 'reaction', 'subtype', 'message', 'deleted_ts'];
         fields.forEach((k) => {
             if(msg.hasOwnProperty(k)) {
                 serializable[k] = msg[k];
@@ -106,7 +111,7 @@ class Bot {
 
         if(Object.keys(msg).length > 0) {
             var serialized = JSON.stringify(serializable);
-            this.logger.verbose('collector', `rpusing to digest_process_queue: ${serialized}`);
+            this.logger.verbose('collector', `rpushing to digest_process_queue: ${serialized}`);
             this.redis.rpush('digest_process_queue', serialized);
         }
 

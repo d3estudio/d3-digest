@@ -6,18 +6,18 @@
         <meta name="viewport"           content="width=device-width" />
         <meta name="description"        content="A digest of what we comment about on D3" />
 
-        <meta property="og:title"       content="D3 Digest" />
+        <meta property="og:title"       content="Weekly Digest" />
         <meta property="og:type"        content="object" />
         <meta property="og:image"       content="http://digest.d3.do/images/d3_logo.png" />
         <meta property="og:url"         content="http://digest.d3.do" />
         <meta property="og:description" content="A digest of what we comment about on D3" />
 
         <meta name="twitter:card"           content="summary">
-        <meta name="twitter:title"          content="D3 Digest">
+        <meta name="twitter:title"          content="Weekly Digest">
         <meta name="twitter:description"    content="A digest of what we comment about on D3">
         <meta name="twitter:image:src"      content="http://digest.d3.do/images/d3_logo.png">
 
-        <title>D3 Digest</title>
+        <title>Weekly Digest</title>
 
         <link rel="stylesheet" href="style.css" media="screen">
 
@@ -30,13 +30,14 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/2.2.2/isotope.pkgd.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/1.3.2/twemoji.min.js"></script>
 
         <script data-template-partial="reactions" type="text/x-handlebars-template">
             <div id="digest-{{ id }}" class="content_reactions">
                 <div class="reactions_title"><strong>D3</strong>reactions</div>
                 <ul class="reactions">
                     {{#each reactions}}
-                        <li class="reaction">{{ repr }}</li>
+                        <li class="reaction">{{{ repr }}}</li>
                     {{/each }}
                 </ul>
             </div>

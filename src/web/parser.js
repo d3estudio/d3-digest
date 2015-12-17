@@ -10,57 +10,66 @@ class Parser {
         this.plugins = plugins;
     }
 
-    itemsInRange(present, past, callback) {
+    static prepareDocuments(settings, docs) {
+        docs = docs
+            .filter((d) => !Object.keys(d.reactions).some((r) => settings.silencerEmojis.indexOf(r) > -1))
+            .filter((d) => {
+                var matches = [];
+                URI.withinString(d.text, function(u) {
+                    matches.push(u);
+                    return u;
+                });
+                return matches.length > 0;
+            });
+        if(docs.length < 1) {
+            return [];
+        }
+        return docs.map((d) => {
+            var url = null;
+            URI.withinString(d.text, (u) => {
+                url = url || u;
+                return u;
+            });
+            if(!url) {
+                return null;
+            }
+            return [url, d];
+        })
+        .filter((d) => d);
+    }
+
+    itemsInRange(skipping, callback) {
         var slackUrlSeparator = /<(.*)>/;
-        this.logger.verbose('parser', `Selecting between ${past} and ${present}...`);
+        this.logger.verbose('parser', `Selecting ${this.settings.outputLimit} after ${skipping} items...`);
         this.mongo.perform((db, dbCallback) => {
-            var query = {
-                date: {
-                    $lte: present,
-                    $gte: past
-                }
-            };
+            var query = {},
+                opts = {
+                    limit: this.settings.outputLimit,
+                    sort: '_id'
+                };
             if(!this.settings.showLinksWithoutReaction) {
                 query.$where = 'Object.keys(this.reactions).length > 0';
             }
-            db.collection('items').find(query).toArray((err, docs) => {
+            if(skipping > 0) {
+                opts.skip = skipping;
+            }
+
+            db.collection('items').find(query, opts).toArray((err, docs) => {
                 if(err) {
                     callback(err, null);
                 } else {
                     this.logger.verbose('parser', `Acquired ${docs.length} documents`);
-                    docs = docs
-                        .filter((d) => !Object.keys(d.reactions).some((r) => this.settings.silencerEmojis.indexOf(r) > -1))
-                        .filter((d) => {
-                            var matches = [];
-                            URI.withinString(d.text, function(u) {
-                                matches.push(u);
-                                return u;
-                            });
-                            return matches.length > 0;
-                        });
+                    docs = Parser.prepareDocuments(this.settings, docs);
                     if(docs.length < 1) {
                         this.logger.verbose('parser', 'No valid documents in range.');
                         callback(null, null);
-                    } else {
-                        docs = docs.map((d) => {
-                            var url = null;
-                            URI.withinString(d.text, (u) => {
-                                url = url || u;
-                                return u;
-                            });
-                            if(!url) {
-                                this.logger.verbose('parser', 'Skipping document id ' + d._id);
-                                return null;
-                            }
-                            return [url, d];
-                        })
-                        .filter((d) => d);
-                        this.logger.verbose('parser', `Handling ${docs.length} document(s) to processor...`);
-                        var processor = new Processor(this.settings, this.logger, this.plugins, this.memcached, docs);
-                        processor.process((err, result) => {
-                            callback(err, result)
-                        });
+                        return;
                     }
+                    this.logger.verbose('parser', `Handling ${docs.length} document(s) to processor...`);
+                    var processor = new Processor(this.settings, this.logger, this.plugins, this.memcached, docs);
+                    processor.process((err, result) => {
+                        callback(err, result)
+                    });
                 }
             });
             dbCallback();

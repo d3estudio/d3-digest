@@ -116,7 +116,6 @@ html:not(.canvas) #page_cover {
 /******************
 /**** Content ****/
 #page_content{
-    padding-top: 80%;
 }
     .content_top_menu{
 
@@ -461,4 +460,13 @@ footer{
     .grid-sizer, .grid-item{
         width: 100%;
     }
+}
+
+/* Twitter Emoji
+ ****************/
+img.emoji {
+   height: 1em;
+   width: 1em;
+   margin: 0 .05em 0 .1em;
+   vertical-align: -0.1em;
 }

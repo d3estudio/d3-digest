@@ -12,7 +12,7 @@ var defaultSettings = {
     memcachedHost: process.env.MEMCACHED_HOST || '127.0.0.1',
     memcachedPort: process.env.MEMCACHED_PORT || '11211',
     redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
-    outputDayRange: 1,
+    outputLimit: 20,
     timezone: 'America/Sao_Paulo',
     showLinksWithoutReaction: false
 };
