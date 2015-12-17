@@ -51,7 +51,7 @@
                 <a target="_blank" href="{{ url }}" alt="{{ title }}" title="{{ title }}">
                     <div class="content_meta ">
                         <h2 class="content_tittle">{{ title }}</h2>
-                        <div class="content_description">{{ summary }}</div>
+                        <div class="content_description">{{#truncate}}{{ description }}{{/truncate}}</div>
                     </div>
                 </a>
             </div>
