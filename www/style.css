@@ -116,6 +116,8 @@ html:not(.canvas) #page_cover {
 /******************
 /**** Content ****/
 #page_content{
+    z-index: 9;
+    position: relative;
 }
     .content_top_menu{
 
@@ -204,6 +206,9 @@ html:not(.canvas) #page_cover {
     .content_description{
         color:#1b1b1b;
         padding: 14px 30px 30px 30px;
+    }
+    .content_image {
+        background-color: #fff;
     }
     .content_url{
         padding: 10px 16px;
