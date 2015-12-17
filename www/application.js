@@ -260,7 +260,7 @@ var AnimationSquare = function(width, height, edge)
 
 $(function() {
     Handlebars.registerHelper('truncate', function(options) {
-        var value = options.fn(this);
+        var value = options.data.root.summary;
         if(value.length > 255) {
             var parts = value.split(' '),
                 part;
