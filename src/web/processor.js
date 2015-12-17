@@ -1,16 +1,16 @@
 var async = require('async'),
     Path = require('path'),
     fs = require('fs'),
-    request = require('request');
+    request = require('request'),
+    logger = require('npmlog');
 
 class Processor {
-    constructor(settings, logger, plugins, memcached, emojiCollection, items) {
+    constructor(settings, logger, plugins, memcached, items) {
         this.settings = settings;
         this.logger = logger;
         this.plugins = plugins;
         this.items = items;
         this.memcached = memcached;
-        this.emojiCollection = emojiCollection;
         if(!Processor.emojis) {
             try {
                 Processor.emojis = JSON.parse(fs.readFileSync(Path.join(__dirname, 'emoji', 'db.json')));
@@ -32,7 +32,7 @@ class Processor {
         if(!reentry && !result && Processor.extraEmoji) {
             var emo = Processor.extraEmoji[name];
             if(!emo && (!Processor.lastEmojiUpdate || (Date.now() - Processor.lastEmojiUpdate) > 360000)) {
-                this.updateCustomEmojis();
+                Processor.updateCustomEmojis(this.settings);
             } else {
                 if(emo.indexOf('http') === -1) {
                     emo = getEmojiUnicode(emo, true);
@@ -113,15 +113,15 @@ class Processor {
         }
     }
 
-    ensureEmojiCollection(then) {
+    static ensureEmojiCollection(then) {
         if(!Processor.extraEmoji) {
-            this.emojiCollection.find().toArray((err, docs) => {
+            Processor.emojiCollection.find().toArray((err, docs) => {
                 var emojis = {};
                 docs.forEach(function(i) {
                     emojis[i.name] = i.value;
                 });
                 Processor.extraEmoji = emojis;
-                this.normaliseEmojiAliases();
+                Processor.normaliseEmojiAliases();
                 then();
             });
         } else {
@@ -129,7 +129,8 @@ class Processor {
         }
     }
 
-    normaliseEmojiAliases() {
+    static normaliseEmojiAliases() {
+        logger.verbose('normaliseEmojiAliases', 'Starting...');
         var emojis = Processor.extraEmoji;
         Object.keys(emojis)
             .forEach(function(k) {
@@ -139,18 +140,19 @@ class Processor {
                     emojis[k] = value;
                 }
             });
+        logger.verbose('normaliseEmojiAliases', 'Completed.');
     }
 
-    updateCustomEmojis() {
-        this.logger.verbose('updateCustomEmojis', 'Updating custom emojis...');
-        request.get(`https://slack.com/api/emoji.list?token=${this.settings.token}`, (e, r, body) => {
+    static updateCustomEmojis(settings) {
+        logger.verbose('updateCustomEmojis', 'Updating custom emojis...');
+        request.get(`https://slack.com/api/emoji.list?token=${settings.token}`, (e, r, body) => {
             if(!e) {
                 try {
                     var data = JSON.parse(body);
                     if(data.ok) {
                         var emoji = data.emoji;
                         Object.keys(emoji).forEach((k) => {
-                            this.emojiCollection.findAndModify(
+                            Processor.emojiCollection.findAndModify(
                                 { name: k }, /* Query */
                                 [], /* Sort */
                                 { value: emoji[k], name: k }, /* Values */
@@ -162,24 +164,25 @@ class Processor {
                             }
                             Processor.extraEmoji[k] = emoji[k];
                         });
-                        this.normaliseEmojiAliases();
+                        logger.verbose('updateCustomEmojis', `${Object.keys(emoji).length} emoji(s) processed.`);
+                        Processor.normaliseEmojiAliases();
                         Processor.lastEmojiUpdate = Date.now();
                     } else {
-                        this.logger.error('updateCustomEmojis', 'Request failed: Invalid payload.');
+                        logger.error('updateCustomEmojis', 'Request failed: Invalid payload.');
                     }
                 } catch(ex) {
-                    this.logger.error('updateCustomEmojis', 'Error requesting:');
-                    this.logger.error('updateCustomEmojis', ex);
+                    logger.error('updateCustomEmojis', 'Error requesting:');
+                    logger.error('updateCustomEmojis', ex);
                 }
             } else {
-                this.logger.error('updateCustomEmojis', 'Request failed:');
-                this.logger.error('updateCustomEmojis', e);
+                logger.error('updateCustomEmojis', 'Request failed:');
+                logger.error('updateCustomEmojis', e);
             }
         });
     }
 
     process(callback) {
-        this.ensureEmojiCollection(() => {
+        Processor.ensureEmojiCollection(() => {
             var processable = [],
                 cached = [];
             this.getCached(processable, cached, () => {
