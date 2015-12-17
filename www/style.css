@@ -47,8 +47,11 @@ canvas { position: fixed; }
 /******************
 /**** Cover ****/
 
+html:not(.canvas) #page_cover {
+    background-image: url("images/bg.png");
+}
+
 #page_cover{
-    /*background-image: url("images/bg.png");*/
     z-index: -1;
 
     background-size: cover;

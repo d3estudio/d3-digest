@@ -261,10 +261,14 @@ $(function() {
         $document  = $(document),
         controller = new Controller(),
         scrollHandler = $.debounce(controller.handleScroll.bind(controller), 300),
+        animation;
+
+    if($('html').is('.canvas')) {
         animation = new Animation();
+        animation.start();
+    };
 
     controller.load();
-    animation.start();
 
     $(window).scroll(function() {
         scrollHandler();
