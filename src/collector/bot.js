@@ -81,7 +81,6 @@ class Bot {
             msg.type = msg.subtype;
         }
         if(this.expectedMessages.indexOf(msg.type) === -1) {
-            logger.verbose('collector', 'Skipping message with type: ', msg.type);
             return;
         }
         if(msg.type === 'emoji_changed') {
