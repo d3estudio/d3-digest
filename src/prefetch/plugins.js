@@ -1,11 +1,11 @@
 var fs = require('fs'),
-    Path = require('path');
+    Path = require('path'),
+    settings = require('../shared/settings').sharedInstance(),
+    logger = require('npmlog');
 
 class Plugins {
     constructor(settings, logger) {
-        this.settings = settings;
         this.pluginsDir = Path.join(__dirname, 'plugins');
-        this.logger = logger;
         this.ignorablePlugins = ['baseplugin.js'];
     }
 
@@ -19,15 +19,15 @@ class Plugins {
     loadPlugin(item) {
         var plugin = null;
         try {
-            this.logger.verbose('pluginLoader', `Loading plugin: ${item}`);
+            logger.verbose('pluginLoader', `Loading plugin: ${item}`);
             var raw_plugin = require(item);
             if(raw_plugin.priority > 1) {
-                this.logger.error('pluginLoader', `Refusing to load plugin "${item}": Incorrect priority value ${raw_plugin.priority}`);
+                logger.error('pluginLoader', `Refusing to load plugin "${item}": Incorrect priority value ${raw_plugin.priority}`);
             } else {
-                plugin = new raw_plugin(this.settings, this.logger);
+                plugin = new raw_plugin(settings, logger);
             }
         } catch(ex) {
-            this.logger.error('pluginLoader', `Error loading plugin at ${item}: `, ex);
+            logger.error('pluginLoader', `Error loading plugin at ${item}: `, ex);
         }
         return plugin;
     }
