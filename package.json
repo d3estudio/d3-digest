@@ -51,7 +51,7 @@
     "eslint": "^1.10.2"
   },
   "scripts": {
-    "linter": "find src -name *.js | xargs node_modules/.bin/eslint",
+    "linter": "find src -name '*.js' | xargs node_modules/.bin/eslint",
     "test": "npm run linter"
   }
 }
