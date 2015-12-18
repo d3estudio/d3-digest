@@ -1,8 +1,5 @@
-var Datastore = require('nedb'),
-    inflection = require('inflection'),
-    URI = require('urijs'),
+var inflection = require('inflection'),
     settings = require('../shared/settings').sharedInstance(),
-    Mongo = require('../shared/mongo'),
     Redis = require('ioredis'),
     logger = require('npmlog');
 
@@ -68,12 +65,12 @@ class Bot {
         }
     }
 
-    channelCheck(chn) {
-        if(!chn) {
-            logger.warn('channelCheck', 'Received empty or false-y chn: ', chn);
+    channelCheck(msg) {
+        if(!msg.channel) {
+            logger.warn('channelCheck', `Received empty or false-y channel ${msg.channel} for message with type ${msg.type}`, msg);
             return false;
         }
-        return this.channels.indexOf(chn) > -1;
+        return this.channels.indexOf(msg.channel) > -1;
     }
 
     processMessage(msg) {
@@ -84,7 +81,7 @@ class Bot {
             return;
         }
         if(msg.type === 'emoji_changed') {
-            this.redis.publish(settings.notificationChannel, JSON.stringify({ type: 'emoji_changed '}));
+            this.redis.publish(settings.notificationChannel, 'emoji_changed'));
         } else if(msg.type === 'group_joined') {
             if(!settings.autoWatch) {
                 return;
@@ -121,14 +118,20 @@ class Bot {
                 serializable.channel = serializable.item.channel;
             }
 
+            // Silence warnings emitted by channelCheck, since Slack does not provide a channel
+            // for reaction_added when item.type === 'file'
+            if(serializable.item && serializable.item.type === 'file') {
+                return;
+            }
+
             if(serializable.channel && typeof(serializable.channel) === 'string') {
                 serializable.channel = this.slack.getChannelGroupOrDMByID(serializable.channel).name;
             }
 
-            if(Object.keys(serializable).length > 0 && (this.checkedCalls.indexOf(serializable.type) > -1 && this.channelCheck(serializable.channel))) {
+            if(Object.keys(serializable).length > 0 && (this.checkedCalls.indexOf(serializable.type) > -1 && this.channelCheck(serializable))) {
                 var serialized = JSON.stringify(serializable);
-                logger.verbose('collector', `rpushing to ${settings.queueName}: ${serialized}`);
-                this.redis.rpush(settings.queueName, serialized);
+                logger.verbose('collector', `rpushing to ${settings.processQueueName}: ${serialized}`);
+                this.redis.rpush(settings.processQueueName, serialized);
             }
         }
     }
