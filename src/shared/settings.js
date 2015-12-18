@@ -16,7 +16,11 @@ var defaultSettings = {
     timezone: 'America/Sao_Paulo',
     showLinksWithoutReaction: false,
     notificationChannel: 'digest_notifications',
-    queueName: 'digest_process_queue'
+    processQueueName: 'digest_process_queue',
+    prefetchQueueName: 'digest_prefetch_queue',
+    errorQueueNane: 'digest_error_queue',
+    metaCachePrefix: 'd-m-',
+    itemCachePrefix: 'd-i-'
 };
 
 class Settings {
