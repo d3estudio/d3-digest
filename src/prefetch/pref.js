@@ -1,10 +1,9 @@
 var settings = require('../shared/settings').sharedInstance(),
     logger = require('npmlog'),
     Redis = require('ioredis'),
-    Path = require('path'),
-    fs = require('fs'),
     PluginLoader = require('./plugins'),
-    CacheManager = require('./cachemanager');
+    CacheManager = require('./cachemanager'),
+    EmojiDb = require('./emojidb');
 
 class Pref {
     constructor() {
@@ -63,7 +62,7 @@ class Pref {
                         .then(() => {
                             logger.warn('loop', `CacheManager rebuilt document ${data.ts}`);
                         });
-                }).catch((ex) => {
+                }).catch(() => {
                     logger.warn('loop', `CacheManager rejected purge promise of ${data.ts}`);
                 });
                 break;

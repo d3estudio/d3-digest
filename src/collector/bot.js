@@ -81,7 +81,7 @@ class Bot {
             return;
         }
         if(msg.type === 'emoji_changed') {
-            this.redis.publish(settings.notificationChannel, 'emoji_changed'));
+            this.redis.publish(settings.notificationChannel, 'emoji_changed');
         } else if(msg.type === 'group_joined') {
             if(!settings.autoWatch) {
                 return;

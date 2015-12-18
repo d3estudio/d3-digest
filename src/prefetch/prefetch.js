@@ -10,7 +10,7 @@ Mongo.prepare()
     })
     .then(() => {
         var Pref = require('./pref'),
-        pref = new Pref(); //eslint-disable-line no-unused-vars
+            pref = new Pref(); //eslint-disable-line no-unused-vars
     })
     .catch((ex) => {
         logger.error('Entrypoint', 'General failure: ', ex);

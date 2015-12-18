@@ -4,7 +4,7 @@ var fs = require('fs'),
     logger = require('npmlog');
 
 class Plugins {
-    constructor(settings, logger) {
+    constructor() {
         this.pluginsDir = Path.join(__dirname, 'plugins');
         this.ignorablePlugins = ['baseplugin.js'];
     }

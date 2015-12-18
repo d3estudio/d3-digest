@@ -38,7 +38,7 @@ class CacheManager {
                                         if(err) {
                                             reject();
                                         } else {
-                                            Mongo.collection('items').updateOne({ ts: doc_ts }, { $set: { ready: true } }, (err, r) => {
+                                            Mongo.collection('items').updateOne({ ts: doc_ts }, { $set: { ready: true } }, (err) => {
                                                 if(!err) {
                                                     resolve();
                                                 } else {
@@ -87,7 +87,7 @@ class CacheManager {
 
     purgeDocument(doc_ts) {
         return new Promise((resolve, reject) => {
-            Mongo.collection('items').updateOne({ ts: doc_ts }, { $set: { ready: false } }, (err, r) => {
+            Mongo.collection('items').updateOne({ ts: doc_ts }, { $set: { ready: false } }, (err) => {
                 if(!err) {
                     this.memcached.del(`${settings.metaCachePrefix}${doc_ts}`, () => {});
                     this.memcached.del(`${settings.itemCachePrefix}${doc_ts}`, () => {});

@@ -42,7 +42,7 @@ class EmojiDb {
             .forEach(function(k) {
                 var value = emojis[k];
                 if(value.indexOf('alias') === 0) {
-                    value = emojis[value.split(':')[1]]
+                    value = emojis[value.split(':')[1]];
                     emojis[k] = value;
                 }
             });
@@ -51,7 +51,7 @@ class EmojiDb {
 
     static fetchCustomEmojis(force) {
         logger.verbose('EmojiDb', 'FetchCustomEmojis: Starting...');
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if(!force && EmojiDb.lastEmojiUpdate && Date.now() - EmojiDb.lastEmojiUpdate > 600000) {
                 logger.verbose('EmojiDb', 'Table updated in less than 10 minutes. Resolving...');
                 resolve();
@@ -101,9 +101,9 @@ class EmojiDb {
     constructor() { }
 
     getEmojiUnicode(name, reentry) {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             if(EmojiDb.baseEmojis) {
-                var item = EmojiDb.baseEmojis.find((e) => e.aliases.indexOf(name) > -1)
+                var item = EmojiDb.baseEmojis.find((e) => e.aliases.indexOf(name) > -1);
                 if(item.emoji) {
                     resolve(item.emoji);
                     return;
