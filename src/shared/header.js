@@ -1,5 +1,6 @@
+/*eslint no-console: 0*/
 var header = function(component) {
-    console.log(['                                                                                ', //eslint-disable-line no-console
+    console.log(['                                                                                ',
     '                                                                                    ',
     '             ╒▄      ╔▄⌐     ╓▄                      ▓─       ▐▓                    ',
     '              ▓▌    ╒▓▓▓     ▓▌                      ▓µ       ▐▓                    ',
