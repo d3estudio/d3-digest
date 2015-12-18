@@ -1,21 +1,18 @@
 var Datastore = require('nedb'),
     inflection = require('inflection'),
     URI = require('urijs'),
-    Settings = require('../shared/settings'),
-    Mongo = require('../shared/mongo');
+    settings = require('../shared/settings').sharedInstance(),
+    Mongo = require('../shared/mongo'),
+    Redis = require('ioredis'),
+    logger = require('npmlog');
 
 class Bot {
-    constructor(slack, logger, settings, redis) {
+    constructor(slack) {
         this.slack = slack;
-        this.logger = logger;
-        this.redis = redis;
-        this.settings = settings;
-        this.looping = false;
-        this.quietLoop = true;
-        this.queue = [];
+        this.redis = new Redis(settings.redisUrl);
         this.channels = settings.channels.map(c => c.toLowerCase());
-        this.collection = null;
 
+        logger.info('Bot', `Connected to Redis @ ${settings.redisUrl}`);
         logger.info('Bot', `Connected to Slack as @${slack.self.name} on ${slack.team.name}`);
         var slackChannels = Object.keys(slack.channels)
             .map(c => slack.channels[c]);
@@ -49,79 +46,90 @@ class Bot {
         }
 
         if(validChannels.length === 0) {
-            logger.error('Bot', 'Hmm. Looks like I have nothing to watch! Nothing to do! Yay! See u later, alligator.');
+            logger.error('Bot', 'Hmm. Looks like I have nothing to watch! Nothing to do! Yay! See you later, alligator.');
             process.exit(1);
             return;
         } else {
             logger.info('Bot', `Okay, I will watch ${inflection.inflect('', validChannels.length, 'this', 'these')} ${inflection.inflect('channel', validChannels.length)}: ${validChannels.join(', ')}`);
         }
 
-        slack
-            .on('raw_message', msg => this.guard(() => this.onRawMessage(msg)))
-            .on('message', msg => this.guard(() => this.enqueue(msg)))
-            .on('emoji_changed', msg => this.guard(() => this.notifyEmojiChange()));
+        this.expectedMessages = ['message', 'reaction_added', 'reaction_removed', 'emoji_changed',
+                                'group_joined', 'message_deleted'];
+        this.checkedCalls = ['reaction_added', 'reaction_removed', 'message_deleted', 'message_changed', 'message'];
+        slack.on('raw_message', msg => this.guard(() => this.processMessage(msg)));
     }
 
     guard(func) {
         try {
             func();
         } catch(ex) {
-            this.logger.error('guard', 'Caught excaption:');
-            this.logger.error('guard', ex);
+            logger.error('guard', 'Caught excaption:');
+            logger.error('guard', ex);
         }
     }
 
-    notifyEmojiChange() {
-        this.redis.publish('digest_notifications', JSON.stringify({ type: 'emoji_changed' }));
-    }
-
-    onRawMessage(msg) {
-        if(msg.type.startsWith('reaction_') || msg.type === 'group_joined') {
-            this.enqueue(msg);
+    channelCheck(chn) {
+        if(!chn) {
+            logger.warn('channelCheck', 'Received empty or false-y chn: ', chn);
+            return false;
         }
+        return this.channels.indexOf(chn) > -1;
     }
 
-    enqueue(msg) {
-        var serializable = {};
-        var fields = ['channel', 'team', 'text', 'ts', 'type', 'user', 'event_ts', 'item', 'reaction', 'subtype', 'message', 'deleted_ts'];
-        fields.forEach((k) => {
-            if(msg.hasOwnProperty(k)) {
-                serializable[k] = msg[k];
+    processMessage(msg) {
+        if(msg.subtype) {
+            msg.type = msg.subtype;
+        }
+        if(this.expectedMessages.indexOf(msg.type) === -1) {
+            logger.verbose('collector', 'Skipping message with type: ', msg.type);
+            return;
+        }
+        if(msg.type === 'emoji_changed') {
+            this.redis.publish(settings.notificationChannel, JSON.stringify({ type: 'emoji_changed '}));
+        } else if(msg.type === 'group_joined') {
+            if(!settings.autoWatch) {
+                return;
             }
-        });
-
-        if(serializable.user) {
-            var user = this.slack.getUserByID(serializable.user);
-            serializable.user = {
-                'real_name': user.real_name,
-                'username': user.name,
-                'image': user.profile.image_192,
-                'title': user.profile.title
-            };
-        }
-
-        if(!serializable.channel && serializable.item) {
-            serializable.channel = serializable.item.channel;
-        }
-
-        if(serializable.channel && typeof(serializable.channel) === 'string') {
-            this.logger.verbose('collector', `Trying to normalise channel: ${serializable.channel}`);
-            serializable.channel = this.slack.getChannelGroupOrDMByID(serializable.channel).name;
-        }
-
-        if(Object.keys(msg).length > 0) {
-            var serialized = JSON.stringify(serializable);
-            this.logger.verbose('collector', `rpushing to digest_process_queue: ${serialized}`);
-            this.redis.rpush('digest_process_queue', serialized);
-        }
-
-        if(serializable.type === 'group_joined' && this.settings.autoWatch) {
-            this.logger.info('Collector', `Yay! I've been invited to ${msg.channel.name}! Updating settings...`);
+            logger.info('Collector', `Yay! I've been invited to ${msg.channel.name}! Updating settings...`);
             var channels = this.settings.channels;
             channels.push(msg.channel.name);
             this.settings.channels = channels;
             if(this.channels.indexOf(msg.channel.name) === -1) {
                 this.channels.push(msg.channel.name);
+            }
+        } else {
+            var serializable = {},
+                fields = ['channel', 'team', 'text', 'ts', 'type', 'user', 'event_ts', 'item',
+                        'reaction', 'message', 'deleted_ts'];
+
+            fields.forEach((k) => {
+                if(msg.hasOwnProperty(k)) {
+                    serializable[k] = msg[k];
+                }
+            });
+
+            if(serializable.user) {
+                var user = this.slack.getUserByID(serializable.user);
+                serializable.user = {
+                    real_name: user.real_name,
+                    username:  user.name,
+                    image:     user.profile.image_192,
+                    title:     user.profile.title
+                };
+            }
+
+            if(!serializable.channel && serializable.item) {
+                serializable.channel = serializable.item.channel;
+            }
+
+            if(serializable.channel && typeof(serializable.channel) === 'string') {
+                serializable.channel = this.slack.getChannelGroupOrDMByID(serializable.channel).name;
+            }
+
+            if(Object.keys(serializable).length > 0 && (this.checkedCalls.indexOf(serializable.type) > -1 && this.channelCheck(serializable.channel))) {
+                var serialized = JSON.stringify(serializable);
+                logger.verbose('collector', `rpushing to ${settings.queueName}: ${serialized}`);
+                this.redis.rpush(settings.queueName, serialized);
             }
         }
     }
