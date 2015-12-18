@@ -14,7 +14,9 @@ var defaultSettings = {
     redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
     outputLimit: 20,
     timezone: 'America/Sao_Paulo',
-    showLinksWithoutReaction: false
+    showLinksWithoutReaction: false,
+    notificationChannel: 'digest_notifications',
+    queueName: 'digest_process_queue'
 };
 
 class Settings {
@@ -28,6 +30,13 @@ class Settings {
 
     static loadSettings() {
         return JSON.parse(fs.readFileSync(Settings.getSettingsPath()));
+    }
+
+    static sharedInstance() {
+        if(!Settings.instance) {
+            Settings.instance = new Settings();
+        }
+        return Settings.instance;
     }
 
     constructor() {
@@ -83,6 +92,7 @@ class Settings {
                 this._channels = settings.channels;
             }
         });
+        logger.level = this.loggerLevel;
     }
 }
 
