@@ -7,7 +7,7 @@ systems({
         ],
         workdir: '/azk/#{manifest.dir}',
         shell: '/bin/bash',
-        command: "node --use_strict src/web/main.js",
+        command: "node --use_strict src/web/web.js",
         wait: 20,
         mounts: {
             '/azk/#{manifest.dir}': sync('.'),
@@ -33,7 +33,7 @@ systems({
         ],
         workdir: '/azk/#{manifest.dir}',
         shell: '/bin/bash',
-        command: "node --use_strict src/collector/main.js",
+        command: "node --use_strict src/collector/collector.js",
         wait: 20,
         mounts: {
             '/azk/#{manifest.dir}': sync('.'),
@@ -52,7 +52,26 @@ systems({
         ],
         workdir: '/azk/#{manifest.dir}',
         shell: '/bin/bash',
-        command: "node --use_strict src/processor/main.js",
+        command: "node --use_strict src/processor/processor.js",
+        wait: 20,
+        mounts: {
+            '/azk/#{manifest.dir}': sync('.'),
+            '/azk/#{manifest.dir}/node_modules': persistent('./node_modules'),
+        },
+        scalable: {'default': 1},
+        envs: {
+            NODE_ENV: 'dev',
+        },
+    },
+    'prefetch': {
+        depends: ['redis', 'db', 'memcached'],
+        image: {'docker': 'azukiapp/node:5'},
+        provision: [
+            'npm install'
+        ],
+        workdir: '/azk/#{manifest.dir}',
+        shell: '/bin/bash',
+        command: "node --use_strict src/prefetch/processor.js",
         wait: 20,
         mounts: {
             '/azk/#{manifest.dir}': sync('.'),
