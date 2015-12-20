@@ -43,7 +43,10 @@ class CacheManager {
             .next()
             .then(doc => this.run(doc))
             .then(doc => JSON.stringify(doc))
-            .then(doc => this.memcached.set(`${settings.metaCachePrefix}${doc_ts}`, doc));
+            .then(doc => memcached.set(`${settings.metaCachePrefix}${doc_ts}`, doc))
+            .catch(ex => {
+                logger.error('generateMetaCacheForDocument', `Error invoking plugins:`, ex);
+            });
     }
 
     purgeDocument(doc_ts) {
@@ -54,51 +57,42 @@ class CacheManager {
     }
 
     run(doc) {
-        return new Promise((resolve, reject) => {
-            var url = null;
-            URI.withinString(doc.text, (u) => {
-                url = url || u;
-                return u;
-            });
-            if(!url) {
-                reject();
-            } else {
-                doc.url = url;
-                return this.runPlugins(doc);
-            }
+        var url = null;
+        URI.withinString(doc.text, (u) => {
+            url = url || u;
+            return u;
         });
+        if(!url) {
+            return Promise.reject(new Error('Document does not has a valid url'));
+        } else {
+            doc.url = url;
+            return this.runPlugins(doc);
+        }
     }
 
-    runPlugins(doc, index, resolve, reject, p) {
-        if(!resolve && !reject) {
-            p = new Promise((res, rej) => {
-                resolve = res;
-                reject = rej;
-            });
-        }
+    runPlugins(doc, index) {
         index = index || 0;
         var plug = this.plugins[index];
         if(!plug) {
-            reject();
+            return Promise.reject();
         } else {
             if(plug.canHandle(doc.url)) {
-                plug.process(doc.url, (result) => {
-                    if(!result) {
-                        this.runPlugins(doc, ++index, resolve, reject, p);
-                    } else {
+                return plug.process(doc.url)
+                    .then(result => {
                         if(plug.constructor.isUrlTransformer) {
                             doc.url = result;
-                            this.runPlugins(doc, ++index, resolve, reject, p);
+                            return this.runPlugins(doc, ++index);
                         } else {
-                            resolve(this.addMeta(result, doc));
+                            return this.addMeta(result, doc);
                         }
-                    }
-                });
+                    }, (ex) => {
+                        logger.warn('runPlugins', `${plug.constructor.name} faulted: `, ex ? ex.message : 'No information provided.');
+                        return this.runPlugins(doc, ++index);
+                    });
             } else {
-                this.runPlugins(doc, ++index, resolve, reject, p);
+                return this.runPlugins(doc, ++index);
             }
         }
-        return p;
     }
 
     addMeta(result, doc) {
