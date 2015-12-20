@@ -52,6 +52,7 @@
   },
   "scripts": {
     "linter": "find src -name '*.js' | xargs node_modules/.bin/eslint",
-    "test": "npm run linter"
+    "test": "npm run linter",
+    "flush": "node --use_strict src/shared/flush.js"
   }
 }
