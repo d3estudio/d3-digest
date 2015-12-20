@@ -1,2 +1,0 @@
-#!/usr/bin/env bash
-node --use_strict src/parser/main.js $@
