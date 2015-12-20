@@ -1,12 +1,10 @@
 var settings = require('../shared/settings').sharedInstance(),
     Mongo = require('../shared/mongo').sharedInstance(),
-    Memcached = require('memcached'),
+    memcached = require('../shared/memcached').sharedInstance(),
     logger = require('npmlog');
 
 class Parser {
-    constructor() {
-        this.memcached = new Memcached(`${settings.memcachedHost}:${settings.memcachedPort}`);
-    }
+    constructor() { }
 
     itemsInRange(skipping) {
         return new Promise((resolve, reject) => {
@@ -25,41 +23,27 @@ class Parser {
                 opts.skip = skipping;
             }
 
-            Mongo.collection('items').find(query, opts).toArray((err, docs) => {
-                if(err) {
-                    reject(err);
-                } else {
+            return Mongo.collection('items')
+                .find(query, opts)
+                .toArray()
+                .then(docs => {
                     logger.verbose('parser', `Acquired ${docs.length} documents`);
-                    docs = docs
-                        .filter((d) => !Object.keys(d.reactions).some((r) => settings.silencerEmojis.indexOf(r) > -1))
-                        .map((d) => {
-                            return new Promise((resolve) => {
-                                this.memcached.get(`${settings.itemCachePrefix}${d.ts}`, (err, j) => {
-                                    if(err || !j) {
-                                        logger.warn('parser', `Memcached get for ${settings.itemCachePrefix}${d.ts} failed.`);
-                                        resolve(null);
-                                    } else {
-                                        logger.verbose('parser', `Memcached get for ${settings.itemCachePrefix}${d.ts} succeeded.`);
-                                        resolve(JSON.parse(j));
-                                    }
-                                });
-                            });
-                        });
+                    docs = docs.filter((d) => !Object.keys(d.reactions).some((r) => settings.silencerEmojis.indexOf(r) > -1))
+                        .map(d => `${settings.itemCachePrefix}${d.ts}`)
+                        .map(d => memcached.get(d));
 
                     if(docs.length < 1) {
                         resolve(null);
                         return;
                     }
+
                     logger.verbose('parser', 'Waiting promises...');
                     Promise.all(docs)
-                        .then((result) => {
-                            return result.filter((r) => r);
-                        })
-                        .then((result) => {
-                            resolve(this.digest(result));
-                        });
-                }
-            });
+                        .then(result => result.filter(r => r))
+                        .then(result => result.map(JSON.parse))
+                        .then(result => resolve(this.digest(result)))
+                        .catch(reject);
+                }).catch(reject);
         });
     }
 
