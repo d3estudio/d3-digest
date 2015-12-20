@@ -42,6 +42,7 @@
     "npmlog": "^2.0.0",
     "nunjucks": "^2.2.0",
     "open-graph": "git+https://git@github.com/victorgama/node-open-graph.git",
+    "request-promise": "^1.0.2",
     "slack-client": "^1.4.1",
     "thenBy.js": "git+https://git@github.com/Teun/thenBy.js.git",
     "unfurl-url": "^1.0.0",
