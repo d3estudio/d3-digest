@@ -30,7 +30,7 @@ var run = function() {
             .then((result) => {
                 var response = {
                     from: skipping,
-                    next: skipping + settings.outputLimit + 1,
+                    next: skipping + settings.outputLimit,
                     items: result
                 };
                 res.status(200).type('json').send(JSON.stringify(response));
