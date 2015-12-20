@@ -1,3 +1,4 @@
+/*eslint no-console: 0*/
 require('./header')('Flush');
 
 var settings = require('./settings').sharedInstance(),
@@ -17,7 +18,7 @@ var run = function() {
                  ' on new posted items. Running this operation is only recommended after',
                  ' upgrading D3 Digest to another upper version (when required!), or after',
                  ' a power failure, or catastrophic data loss on Memcached or the database.'].join('\n'));
-    console.log('')
+    console.log('');
     rl.setPrompt('Do you really want to continue? (y/N) ');
     rl.prompt();
     rl.on('line', (answer) => {
@@ -30,13 +31,12 @@ var run = function() {
         }
     }).on('close', () => {
         logger.info('Flush', 'Aborted.');
-        process.exit(0)
+        process.exit(0);
     });
 };
 
 var perform = function() {
-    var redis, collection, items,
-        memcachedUrl = `${settings.memcachedHost}:${settings.memcachedPort}`;
+    var redis, collection, items;
 
     logger.info('Flush', `Preparing: Connecting to Redis @ ${settings.redisUrl}`);
     redis = new Redis(settings.redisUrl);
@@ -89,6 +89,6 @@ var perform = function() {
 Mongo.prepare()
     .then(run)
     .catch((ex) => {
-        logger.error('Flush', 'Error: ', ex)
+        logger.error('Flush', 'Error: ', ex);
         process.exit(1);
     });

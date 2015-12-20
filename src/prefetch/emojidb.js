@@ -13,7 +13,7 @@ class EmojiDb {
             EmojiDb.baseEmojis = JSON.parse(fs.readFileSync(Path.join(__dirname, 'emoji', 'db.json')));
         } catch(ex) {
             logger.error('EmojiDb', 'Error preloading emoji database: ', ex);
-            reject();
+            return Promise.reject(ex);
         }
         EmojiDb.emojiCollection = Mongo.collection('emoji');
         EmojiDb.customEmojis = {};

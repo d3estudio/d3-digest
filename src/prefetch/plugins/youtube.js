@@ -10,14 +10,14 @@ class YouTube extends Plugin {
         return url.match(this.regex);
     }
 
-    process(url, callback) {
+    run(url) {
         var result = { type: 'youtube' },
             fields = ['title', 'html', 'thumbnail_height', 'thumbnail_width', 'thumbnail_url'];
 
         return request.get(`http://www.youtube.com/oembed?url=${url}`)
             .then(body => JSON.parse(body))
             .then(json => fields.forEach(k => result[k] = json[k]))
-            .then(fields => result);
+            .then(() => result);
     }
 }
 

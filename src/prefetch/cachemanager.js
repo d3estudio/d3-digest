@@ -23,7 +23,7 @@ class CacheManager {
             })
             .then(cache_result => (cache_result || this.generateMetaCacheForDocument(doc_ts)))
             .then(_item => item = JSON.parse(_item))
-            .then(item => docReactions = Object.keys(document.reactions))
+            .then(() => docReactions = Object.keys(document.reactions))
             .then(reactions => Promise.all(reactions.map(EmojiDb.getEmojiUnicode.bind(EmojiDb))))
             .then(data => docReactions.map((k, i) => ({ name: k, count: document.reactions[k], repr: data[i] })))
             .then(reactions => {
@@ -32,7 +32,7 @@ class CacheManager {
             })
             .then(item => JSON.stringify(item))
             .then(item => memcached.set(`${settings.itemCachePrefix}${doc_ts}`, item))
-            .then(json => this.collection.updateOne({ ts: doc_ts }, { $set: { ready: true } }));
+            .then(() => this.collection.updateOne({ ts: doc_ts }, { $set: { ready: true } }));
     }
 
     generateMetaCacheForDocument(doc_ts) {

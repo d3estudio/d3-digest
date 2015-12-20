@@ -17,7 +17,7 @@ class Plugin {
         return this.run(url);
     }
 
-    run(url) {
+    run() {
         return Promise.reject(new Error('Not implemented'));
     }
 }

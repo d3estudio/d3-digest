@@ -35,7 +35,7 @@ class PoorLink extends Plugin {
                 var result = {}, r;
                 Object.keys(this.processors).forEach(k => {
                     this.processors[k].forEach(p => {
-                        if(r = p($)) {
+                        if((r = p($))) {
                             result[k] = result[k] || r;
                         }
                     });
@@ -54,7 +54,7 @@ class PoorLink extends Plugin {
                     result = {
                         type: 'poor-link',
                         title: result.title
-                    }
+                    };
                     if(!result.title) {
                         result = null;
                     }
@@ -68,8 +68,7 @@ class PoorLink extends Plugin {
                 url: result.image,
                 encoding: null
             },
-            orientation = 'vertical',
-            size;
+            orientation = 'vertical';
         return request.get(opts)
             .then(body => sizeOf(body))
             .then(size => {

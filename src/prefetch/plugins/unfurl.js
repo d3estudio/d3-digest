@@ -1,6 +1,5 @@
 var Plugin = require('./baseplugin'),
-    unfurl = require('unfurl-url'),
-    logger = require('npmlog');
+    unfurl = require('unfurl-url');
 
 class Unfurl extends Plugin {
     canHandle() {

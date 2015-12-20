@@ -34,19 +34,19 @@ class Memcached {
     flush() {
         return new Promise((resolve, reject) => {
             this.instance.flush((err) => {
-               if(err) {
+                if(err) {
                     reject(err);
                 } else {
                     resolve();
                 }
             });
-        })
+        });
     }
 
     del(key) {
         return new Promise((resolve, reject) => {
             this.instance.del(key, (err) => {
-               if(err) {
+                if(err) {
                     reject(err);
                 } else {
                     resolve();

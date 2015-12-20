@@ -17,7 +17,7 @@ class Vimeo extends Plugin {
         return request.get(`https://vimeo.com/api/oembed.json?url=${url}`)
             .then(body => JSON.parse(body))
             .then(json => fields.forEach(k => result[k] = json[k]))
-            .then(fields => result);
+            .then(() => result);
     }
 }
 
