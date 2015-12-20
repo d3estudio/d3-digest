@@ -2,7 +2,7 @@ require('./header')('Flush');
 
 var settings = require('./settings').sharedInstance(),
     Mongo = require('./mongo'),
-    Memcached = require('memcached'),
+    memcached = require('./memcached').sharedInstance(),
     readline = require('readline'),
     Redis = require('ioredis'),
     logger = require('npmlog');
@@ -35,13 +35,11 @@ var run = function() {
 };
 
 var perform = function() {
-    var redis, memcached, collection, items,
+    var redis, collection, items,
         memcachedUrl = `${settings.memcachedHost}:${settings.memcachedPort}`;
 
     logger.info('Flush', `Preparing: Connecting to Redis @ ${settings.redisUrl}`);
     redis = new Redis(settings.redisUrl);
-    logger.info('Flush', `Preparing: Connecting to Memcached @ ${memcachedUrl}`);
-    memcached = new Memcached(memcachedUrl);
     collection = Mongo.sharedInstance().collection('items');
 
     logger.info('Flush', 'Performing step 1/4: Obtaining database items...');
@@ -65,15 +63,7 @@ var perform = function() {
         })
         .then(() => {
             logger.info('Flush', 'Performing step 3/4: Cleaning memcached state...');
-            return new Promise((resolve, reject) => {
-                memcached.flush((err) => {
-                    if(err) {
-                        reject(err);
-                    } else {
-                        resolve();
-                    }
-                });
-            });
+            return memcached.flush();
         })
         .then(() => {
             logger.info('Flush', 'Performing step 4/4: Enqueuing items to Prefetch process...');
