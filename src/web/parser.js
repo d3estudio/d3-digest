@@ -7,44 +7,35 @@ class Parser {
     constructor() { }
 
     itemsInRange(skipping) {
-        return new Promise((resolve, reject) => {
-            logger.verbose('parser', `Selecting ${settings.outputLimit} after ${skipping} items...`);
-            var query = {
-                    ready: true
-                },
-                opts = {
-                    limit: settings.outputLimit,
-                    sort: 'date'
-                };
-            if(!settings.showLinksWithoutReaction) {
-                query.$where = 'Object.keys(this.reactions).length > 0';
-            }
-            if(skipping > 0) {
-                opts.skip = skipping;
-            }
+        logger.verbose('parser', `Selecting ${settings.outputLimit} after ${skipping} items...`);
+        var query = { ready: true },
+            opts = { limit: settings.outputLimit, sort: 'date' };
 
-            return Mongo.collection('items')
-                .find(query, opts)
-                .toArray()
-                .then(docs => {
-                    logger.verbose('parser', `Acquired ${docs.length} documents`);
-                    docs = docs.filter((d) => !Object.keys(d.reactions).some((r) => settings.silencerEmojis.indexOf(r) > -1))
-                        .map(d => `${settings.itemCachePrefix}${d.ts}`)
-                        .map(d => memcached.get(d));
+        if(!settings.showLinksWithoutReaction) {
+            query.$where = 'Object.keys(this.reactions).length > 0';
+        }
 
-                    if(docs.length < 1) {
-                        resolve(null);
-                        return;
-                    }
+        if(skipping > 0) {
+            opts.skip = skipping;
+        }
 
-                    logger.verbose('parser', 'Waiting promises...');
-                    Promise.all(docs)
-                        .then(result => result.filter(r => r))
-                        .then(result => result.map(JSON.parse))
-                        .then(result => resolve(this.digest(result)))
-                        .catch(reject);
-                }).catch(reject);
-        });
+        return Mongo.collection('items')
+            .find(query, opts)
+            .toArray()
+            .then(docs => {
+                logger.verbose('parser', `Acquired ${docs.length} documents`);
+                return docs;
+            })
+            .then(docs => {
+                docs = docs
+                    .filter(d => !Object.keys(d.reactions).some((r) => settings.silencerEmojis.indexOf(r) > -1))
+                    .map(d => `${settings.itemCachePrefix}${d.ts}`)
+                    .map(d => memcached.get(d));
+                return Promise.all(docs)
+                    .then(result => result.filter(r => r))
+                    .then(result => result.map(JSON.parse))
+                    .then(result => this.digest(result));
+            });
     }
 
     digest(result) {
