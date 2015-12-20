@@ -1,6 +1,7 @@
 var fs = require('fs'),
     Path = require('path'),
-    logger = require('npmlog');
+    logger = require('npmlog'),
+    Singleton = require('./singleton');
 
 var defaultSettings = {
     token: '',
@@ -34,13 +35,6 @@ class Settings {
 
     static loadSettings() {
         return JSON.parse(fs.readFileSync(Settings.getSettingsPath()));
-    }
-
-    static sharedInstance() {
-        if(!Settings.instance) {
-            Settings.instance = new Settings();
-        }
-        return Settings.instance;
     }
 
     constructor() {
@@ -100,4 +94,4 @@ class Settings {
     }
 }
 
-module.exports = Settings;
+module.exports = new Singleton(Settings);
