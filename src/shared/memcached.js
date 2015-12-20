@@ -43,7 +43,17 @@ class Memcached {
         })
     }
 
-
+    del(key) {
+        return new Promise((resolve, reject) => {
+            this.instance.del(key, (err) => {
+               if(err) {
+                    reject(err);
+                } else {
+                    resolve();
+                }
+            });
+        });
+    }
 }
 
 module.exports = new Singleton(Memcached);
