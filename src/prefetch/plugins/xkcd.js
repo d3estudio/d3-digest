@@ -1,5 +1,5 @@
 var Plugin = require('./baseplugin'),
-    request = require('request'),
+    request = require('request-promise'),
     cheerio = require('cheerio');
 
 class XKCD extends Plugin {
@@ -11,31 +11,17 @@ class XKCD extends Plugin {
         return url.match(this.regex);
     }
 
-    process(url, callback) {
-        this.logger.verbose('xkcd', `processing ${url}`);
-        request.get({
-            url: url
-        }, (e, r, body) => {
-            if(e) {
-                callback(null);
-                this.logger.error('xkcd', 'Error processing request: ', e);
-                return;
-            }
-            var $ = cheerio.load(body),
-                img = $('#comic > img').first();
-            if(img.length === 1) {
-                callback({
-                    'type': 'xkcd',
-                    'img': img.attr('src'),
-                    'title': img.attr('alt'),
-                    'explain': img.attr('title'),
-                    'link': url
-                });
-            } else {
-                this.logger.error('Empty XKCD #comic > img');
-                callback(null);
-            }
-        });
+    run(url) {
+        return request.get(url)
+            .then(html => cheerio.load(html))
+            .then($ => $('#comic > img').first())
+            .then(img => ({
+                type: 'xkcd',
+                img: img.attr('src'),
+                title: img.attr('alt'),
+                explain: img.attr('title'),
+                link: url
+            }));
     }
 }
 

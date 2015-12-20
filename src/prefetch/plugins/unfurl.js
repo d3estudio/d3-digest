@@ -1,19 +1,21 @@
 var Plugin = require('./baseplugin'),
-    unfurl = require('unfurl-url');
+    unfurl = require('unfurl-url'),
+    logger = require('npmlog');
 
 class Unfurl extends Plugin {
     canHandle() {
         return true;
     }
 
-    process(url, callback) {
-        unfurl.url(url, (err, res) => {
-            if(!err) {
-                callback(res);
-            } else {
-                this.logger.error(`Unfurl failed for URL: ${url}: `, err);
-                callback(url);
-            }
+    run(url) {
+        return new Promise((resolve, reject) => {
+            unfurl.url(url, (err, res) => {
+                if(!err) {
+                    resolve(res);
+                } else {
+                    reject(url);
+                }
+            });
         });
     }
 }

@@ -1,5 +1,5 @@
 var Plugin = require('./baseplugin'),
-    request = require('request');
+    request = require('request-promise');
 
 class Vimeo extends Plugin {
     init() {
@@ -10,29 +10,14 @@ class Vimeo extends Plugin {
         return url.match(this.regex);
     }
 
-    process(url, callback) {
-        this.logger.verbose('vimeo', `processing ${url}`);
-        request.get({
-            url: `https://vimeo.com/api/oembed.json?url=${url}`
-        }, (e, r, body) => {
-            if(e) {
-                this.logger.error('vimeo', 'Error processing request: ', e);
-                callback(null);
-            } else {
-                try {
-                    var json = JSON.parse(body),
-                        fields = ['description', 'title', 'html', 'thumbnail_height', 'thumbnail_width', 'thumbnail_url'],
-                        res = {
-                            type: 'vimeo'
-                        };
-                    fields.forEach((f) => res[f] = json[f]);
-                    callback(res);
-                } catch(ex) {
-                    this.logger.error('vimeo', 'Error processing response: ', ex);
-                    callback(null);
-                }
-            }
-        });
+    run(url) {
+        var result = { type: 'vimeo' },
+            fields = ['description', 'title', 'html', 'thumbnail_height', 'thumbnail_width', 'thumbnail_url'];
+
+        return request.get(`https://vimeo.com/api/oembed.json?url=${url}`)
+            .then(body => JSON.parse(body))
+            .then(json => fields.forEach(k => result[k] = json[k]))
+            .then(fields => result);
     }
 }
 

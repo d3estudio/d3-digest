@@ -1,7 +1,8 @@
+var logger = require('npmlog');
+
 class Plugin {
-    constructor(settings, logger) {
+    constructor(settings) {
         this.settings = settings;
-        this.logger = logger;
         this.init();
     }
 
@@ -11,8 +12,13 @@ class Plugin {
         return false;
     }
 
-    process(url, callback) {
-        return callback({});
+    process(url) {
+        logger.verbose(this.constructor.name, `Processing ${url}`);
+        return this.run(url);
+    }
+
+    run(url) {
+        return Promise.reject(new Error('Not implemented'));
     }
 }
 

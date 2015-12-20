@@ -1,5 +1,5 @@
 var Plugin = require('./baseplugin'),
-    request = require('request');
+    request = require('request-promise');
 
 class YouTube extends Plugin {
     init() {
@@ -11,28 +11,13 @@ class YouTube extends Plugin {
     }
 
     process(url, callback) {
-        this.logger.verbose('youtube', `processing ${url}`);
-        request.get({
-            url: `http://www.youtube.com/oembed?url=${url}`
-        }, (e, r, body) => {
-            if(e) {
-                this.logger.error('youtube', 'Error processing request ', e);
-                callback(null);
-            } else {
-                try {
-                    var json = JSON.parse(body),
-                        fields = ['title', 'html', 'thumbnail_height', 'thumbnail_width', 'thumbnail_url'],
-                        res = {
-                            'type': 'youtube'
-                        };
-                    fields.forEach((f) => res[f] = json[f]);
-                    callback(res);
-                } catch(ex) {
-                    this.logger.error('youtube', 'Error processing response: ', ex);
-                    callback(null);
-                }
-            }
-        });
+        var result = { type: 'youtube' },
+            fields = ['title', 'html', 'thumbnail_height', 'thumbnail_width', 'thumbnail_url'];
+
+        return request.get(`http://www.youtube.com/oembed?url=${url}`)
+            .then(body => JSON.parse(body))
+            .then(json => fields.forEach(k => result[k] = json[k]))
+            .then(fields => result);
     }
 }
 

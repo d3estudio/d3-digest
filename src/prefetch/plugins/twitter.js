@@ -1,5 +1,6 @@
 var Plugin = require('./baseplugin'),
-    request = require('request');
+    request = require('request-promise'),
+    logger = require('npmlog');
 
 class Twitter extends Plugin {
     init() {
@@ -10,30 +11,19 @@ class Twitter extends Plugin {
         return url.match(this.regex) && !!this.settings.twitterConsumerKey && !!this.settings.twitterConsumerSecret;
     }
 
-    process(url, callback) {
-        this.logger.verbose('twitter', `processing ${url}`);
-        request.get({
+    run(url) {
+        logger.verbose('twitter', 'Running');
+        var options = {
             url: `https://api.twitter.com/1/statuses/oembed.json?url=${url}`,
             oauth: {
                 consumer_key: this.settings.twitterConsumerKey,
                 consumer_secret: this.settings.twitterConsumerSecret
             }
-        }, (e, r, body) => {
-            if(e) {
-                this.logger.error('twitter', 'Error processing request: ', e);
-                callback(null);
-            } else {
-                try {
-                    callback({
-                        type: 'tweet',
-                        html: JSON.parse(body).html
-                    });
-                } catch(ex) {
-                    this.logger.error('twitter', 'Error processing response: ', e);
-                    callback(null);
-                }
-            }
-        });
+        };
+        logger.verbose('twitter', 'Returning');
+        return request.get(options)
+            .then(body => JSON.parse(body).html)
+            .then(html => ({ type: 'tweet', html: html }));
     }
 }
 

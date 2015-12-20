@@ -1,5 +1,5 @@
 var Plugin = require('./baseplugin'),
-    request = require('request');
+    request = require('request-promise');
 
 class Spotify extends Plugin {
 
@@ -12,28 +12,14 @@ class Spotify extends Plugin {
         return this.httpRegex.test(url) || this.uriRegex.test(url);
     }
 
-    process(url, callback) {
-        this.logger.verbose('spotify', `processing ${url}`);
-        request.get({
+    run(url) {
+        var options = {
             url: `https://embed.spotify.com/oembed/?url=${url}`,
             headers: {'User-Agent': 'request'}
-        }, (e, r, body) => {
-            if(e) {
-                this.logger.error('spotify', 'Error processing request: ', e);
-                callback(null);
-            } else {
-                try {
-                    callback({
-                        type: 'spotify',
-                        html: JSON.parse(body).html
-                    });
-                } catch(ex) {
-                    this.logger.error('spotify', 'Error parsing response: ', ex);
-                    this.logger.error('spotify', `Body was: ${body}`);
-                    callback(null);
-                }
-            }
-        });
+        };
+        return request.get(options)
+            .then(body => JSON.parse(body).html)
+            .then(html => ({ type: 'spotify', html: html }));
     }
 }
 

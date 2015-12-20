@@ -1,5 +1,5 @@
 var Plugin = require('./baseplugin'),
-    request = require('request'),
+    request = require('request-promise'),
     cheerio = require('cheerio'),
     sizeOf = require('image-size');
 
@@ -28,68 +28,58 @@ class PoorLink extends Plugin {
         };
     }
 
-    process(url, callback) {
-        this.logger.verbose('poorLink', `processing ${url}`);
-        request.get(url, (e, r, body) => {
-            if(e || r.statusCode !== 200) {
-                callback(null);
-                this.logger.error('poorLink', `Error processing request: ${url}`, (e || 'Server error: ' + r.statusCode));
-                return;
-            }
-            var $ = cheerio.load(body);
-            var result = {};
-            Object.keys(this.processors).forEach(k => {
-                this.processors[k].forEach(p => {
-                    if(!result[k]) {
-                        var r = p($);
-                        if(r) {
-                            result[k] = r;
+    run(url) {
+        return request.get(url)
+            .then(body => cheerio.load(body))
+            .then($ => {
+                var result = {}, r;
+                Object.keys(this.processors).forEach(k => {
+                    this.processors[k].forEach(p => {
+                        if(r = p($)) {
+                            result[k] = result[k] || r;
                         }
-                    }
+                    });
                 });
-            });
-            if(result && result.title && result.image && result.summary) {
-                result.type = 'rich-link';
-                this.processImageSize(result, callback);
-                return;
-            } else {
-                var procs = this.processors.title,
-                    title = null;
-                procs.forEach(p => title = title || p($));
-                result = {
-                    type: 'poor-link',
-                    title: title
-                };
-                if(!result.title) {
-                    result = null;
+                return result;
+            })
+            .then(result => {
+                if(result && result.title && result.image && result.summary) {
+                    result.type = 'rich-link';
+                    return this.processImageSize(result);
                 }
-            }
-            callback(result);
-        });
+                return result;
+            })
+            .then(result => {
+                if(result && result.title && (!result.image || !result.summary)) {
+                    result = {
+                        type: 'poor-link',
+                        title: result.title
+                    }
+                    if(!result.title) {
+                        result = null;
+                    }
+                }
+                return result;
+            });
     }
 
-    processImageSize(result, callback) {
-        request({
-            url: result.image,
-            encoding: null
-        }, (error, response, body) => {
-            var orientation = 'vertical',
-                size = { width: undefined, height: undefined };
-            if(!error && response.statusCode === 200) {
-                try {
-                    var dim = sizeOf(body);
-                    if(dim.width > dim.height) {
-                        orientation = 'horizontal';
-                    }
-                    size = dim;
-                } catch(err) {
-                    this.logger.error('poorLink', 'Error processing image size: ', err);
+    processImageSize(result) {
+        var opts = {
+                url: result.image,
+                encoding: null
+            },
+            orientation = 'vertical',
+            size;
+        return request.get(opts)
+            .then(body => sizeOf(body))
+            .then(size => {
+                if(size.width > size.height) {
+                    orientation = 'horizontal';
                 }
-            }
-            result.imageOrientation = orientation;
-            result.imageSize = size;
-            callback(result);
-        });
+                result.imageOrientation = orientation;
+                result.imageSize = size;
+                return result;
+            });
     }
 }
 
