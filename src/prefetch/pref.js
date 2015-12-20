@@ -30,48 +30,43 @@ class Pref {
         });
         pRedis.subscribe(settings.notificationChannel);
         this.cacheManager = new CacheManager(plugins);
-
+        logger.info('Pref', 'Initialising loop...');
         this.loop();
     }
 
     loop() {
-        this.redis.blpop(settings.prefetchQueueName, 0, (err, data) => {
-            logger.verbose('loop', 'dequeued: ', data[1]);
-            try {
-                data = JSON.parse(data[1]);
-            } catch(ex) {
-                logger.error('loop', 'Error deserialising data: ', ex);
+        this.redis.blpop(settings.prefetchQueueName, 0)
+            .then((data) => {
+                logger.verbose('loop', 'dequeued: ', data[1]);
+                try {
+                    data = JSON.parse(data[1]);
+                } catch(ex) {
+                    logger.error('loop', 'Error deserialising data: ', ex);
+                    this.loop();
+                }
+                switch(data.type) {
+                case 'prefetch_item':
+                    this.cacheManager.updateItemCacheForDocument(data.ts)
+                        .then(() => logger.verbose('loop', `CacheManager updated document ${data.ts}`))
+                        .catch((ex) => logger.error('loop', `CacheManager rejected update promise of ${data.ts}: `, ex));
+                    break;
+                case 'purge_item':
+                    this.cacheManager.purgeDocument(data.ts)
+                        .then(() => this.cacheManager.generateMetaCacheForDocument(data.ts))
+                        .then(() => this.cacheManager.updateItemCacheForDocument(data.ts))
+                        .then(() => logger.verbose('loop', `CacheManager rebuilt document ${data.ts}`))
+                        .catch((ex) => logger.error('loop', `CacheManager rejected purge promise of ${data.ts}`, ex));
+                    break;
+                default:
+                    logger.warn('loop', `Received invalid request type "${data.type}"`);
+                    break;
+                }
                 this.loop();
-            }
-            switch(data.type) {
-            case 'prefetch_item':
-                this.cacheManager.updateItemCacheForDocument(data.ts)
-                    .then(() => {
-                        logger.verbose('loop', `CacheManager updated document ${data.ts}`);
-                    })
-                    .catch((ex) => {
-                        logger.warn('loop', `CacheManager rejected update promise of ${data.ts}: `, ex);
-                    });
-                break;
-            case 'purge_item':
-                this.cacheManager.purgeDocument(data.ts).then(() => {
-                    this.cacheManager.generateMetaCacheForDocument(data.ts)
-                        .then(() => {
-                            return this.cacheManager.updateItemCacheForDocument(data.ts);
-                        })
-                        .then(() => {
-                            logger.verbose('loop', `CacheManager rebuilt document ${data.ts}`);
-                        });
-                }).catch(() => {
-                    logger.warn('loop', `CacheManager rejected purge promise of ${data.ts}`);
-                });
-                break;
-            default:
-                logger.warn('loop', `Received invalid request type "${data.type}"`);
-                break;
-            }
-            this.loop();
-        });
+            })
+            .catch((ex) => {
+                logger.error('loop', 'Error processing: ', ex);
+                this.loop();
+            });
     }
 }
 

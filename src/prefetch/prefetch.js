@@ -5,9 +5,7 @@ var Mongo = require('../shared/mongo'),
     logger = require('npmlog');
 
 Mongo.prepare()
-    .then(() => {
-        return EmojiDb.prepare();
-    })
+    .then(() => EmojiDb.prepare())
     .then(() => {
         var Pref = require('./pref'),
             pref = new Pref(); //eslint-disable-line no-unused-vars

@@ -8,27 +8,27 @@ var settings = require('../shared/settings').sharedInstance(),
 
 class EmojiDb {
     static prepare() {
-        return new Promise((resolve, reject) => {
-            Mongo = MongoDb.sharedInstance();
-            try {
-                EmojiDb.baseEmojis = JSON.parse(fs.readFileSync(Path.join(__dirname, 'emoji', 'db.json')));
-            } catch(ex) {
-                logger.error('EmojiDb', 'Error preloading emoji database: ', ex);
-                reject();
-            }
-            EmojiDb.emojiCollection = Mongo.collection('emoji');
-            EmojiDb.customEmojis = {};
-            EmojiDb.instance = new EmojiDb();
-            EmojiDb.emojiCollection.find().toArray((err, docs) => {
+        Mongo = MongoDb.sharedInstance();
+        try {
+            EmojiDb.baseEmojis = JSON.parse(fs.readFileSync(Path.join(__dirname, 'emoji', 'db.json')));
+        } catch(ex) {
+            logger.error('EmojiDb', 'Error preloading emoji database: ', ex);
+            reject();
+        }
+        EmojiDb.emojiCollection = Mongo.collection('emoji');
+        EmojiDb.customEmojis = {};
+        EmojiDb.instance = new EmojiDb();
+        return EmojiDb.emojiCollection
+            .find()
+            .toArray()
+            .then((docs) => {
                 var emojis = {};
                 docs.forEach(function(i) {
                     emojis[i.name] = i.value;
                 });
                 EmojiDb.extraEmoji = emojis;
                 EmojiDb.normaliseEmojiAliases();
-                resolve();
             });
-        });
     }
 
     static sharedInstance() {

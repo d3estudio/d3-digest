@@ -1,102 +1,56 @@
 var Mongo = require('../shared/mongo').sharedInstance(),
     settings = require('../shared/settings').sharedInstance(),
-    Memcached = require('memcached'),
+    memcached = require('../shared/memcached').sharedInstance(),
     EmojiDb = require('./emojidb').sharedInstance(),
     URI = require('urijs'),
     logger = require('npmlog');
 
 class CacheManager {
     constructor(plugins) {
-        this.memcached = new Memcached(`${settings.memcachedHost}:${settings.memcachedPort}`);
         this.plugins = plugins;
+        this.collection = Mongo.collection('items');
     }
 
     updateItemCacheForDocument(doc_ts) {
-        return new Promise((resolve, reject) => {
-            Mongo.collection('items').find({ ts: doc_ts }).limit(1).next((err, doc) => {
-                if(doc) {
-                    this.memcached.get(`${settings.metaCachePrefix}${doc_ts}`, (err, r) => {
-                        if(err) {
-                            reject(err);
-                        } else if(!r) {
-                            this.generateMetaCacheForDocument(doc_ts).then(() => {
-                                this.updateItemCacheForDocument(doc_ts).then(resolve).catch(reject);
-                            }).catch(reject);
-                        } else {
-                            var item = JSON.parse(r);
-                            var keys = Object.keys(doc.reactions);
-                            Promise.all(keys.map((k) => EmojiDb.getEmojiUnicode(k)))
-                                .then((data) => {
-                                    return keys.map((k, i) => ({ name: k, count: doc.reactions[k], repr: data[i] }));
-                                })
-                                .then((reactions) => {
-                                    item.reactions = reactions;
-                                    return item;
-                                })
-                                .then((item) => {
-                                    this.memcached.set(`${settings.itemCachePrefix}${doc_ts}`, JSON.stringify(item), 2592000, (err) => {
-                                        if(err) {
-                                            reject();
-                                        } else {
-                                            Mongo.collection('items').updateOne({ ts: doc_ts }, { $set: { ready: true } }, (err) => {
-                                                if(!err) {
-                                                    resolve();
-                                                } else {
-                                                    reject(err);
-                                                }
-                                            });
-                                        }
-                                    });
-                                });
-                        }
-                    });
-                } else {
-                    reject();
-                }
-            });
-        });
+        var document, item, docReactions;
+        return this.collection
+            .find({ ts: doc_ts })
+            .limit(1)
+            .next()
+            .then(doc => {
+                document = doc;
+                return memcached.get(`${settings.metaCachePrefix}${doc_ts}`);
+            })
+            .then(cache_result => (cache_result || this.generateMetaCacheForDocument(doc_ts)))
+            .then(_item => item = JSON.parse(_item))
+            .then(item => docReactions = Object.keys(document.reactions))
+            .then(reactions => Promise.all(reactions.map(EmojiDb.getEmojiUnicode.bind(EmojiDb))))
+            .then(data => docReactions.map((k, i) => ({ name: k, count: document.reactions[k], repr: data[i] })))
+            .then(reactions => {
+                item.reactions = reactions;
+                return item;
+            })
+            .then(item => JSON.stringify(item))
+            .then(item => memcached.set(`${settings.itemCachePrefix}${doc_ts}`, item))
+            .then(json => this.collection.updateOne({ ts: doc_ts }, { $set: { ready: true } }));
     }
 
     generateMetaCacheForDocument(doc_ts) {
         logger.verbose('generateMetaCacheForDocument', 'Running for ', doc_ts);
-        return new Promise((resolve, reject) => {
-            Mongo.collection('items').find({ ts: doc_ts }).limit(1).toArray((err, docs) => {
-                if(docs && docs.length === 1) {
-                    var doc = docs[0];
-                    logger.verbose('generateMetaCacheForDocument', 'Acquired doc for ', doc_ts);
-                    this.run(doc)
-                        .then((result) => {
-                            logger.verbose('generateMetaCacheForDocument', 'Got plugin result for ', doc_ts);
-                            this.memcached.set(`${settings.metaCachePrefix}${doc_ts}`, JSON.stringify(result), 2592000, (err) => {
-                                if(err) {
-                                    logger.verbose('generateMetaCacheForDocument', 'Rejected for ', doc_ts);
-                                    reject();
-                                } else {
-                                    logger.verbose('generateMetaCacheForDocument', 'Resolved for ', doc_ts);
-                                    resolve();
-                                }
-                            });
-                        })
-                        .catch(reject);
-                } else {
-                    reject();
-                }
-            });
-        });
+        return this.collection
+            .find({ ts: doc_ts })
+            .limit(1)
+            .next()
+            .then(doc => this.run(doc))
+            .then(doc => JSON.stringify(doc))
+            .then(doc => this.memcached.set(`${settings.metaCachePrefix}${doc_ts}`, doc));
     }
 
     purgeDocument(doc_ts) {
-        return new Promise((resolve, reject) => {
-            Mongo.collection('items').updateOne({ ts: doc_ts }, { $set: { ready: false } }, (err) => {
-                if(!err) {
-                    this.memcached.del(`${settings.metaCachePrefix}${doc_ts}`, () => {});
-                    this.memcached.del(`${settings.itemCachePrefix}${doc_ts}`, () => {});
-                    resolve();
-                } else {
-                    reject();
-                }
-            });
-        });
+        return this.collection
+            .updateOne({ ts: doc_ts }, { $set: { ready: false } })
+            .then(() => memcached.del(`${settings.metaCachePrefix}${doc_ts}`))
+            .then(() => memcached.del(`${settings.itemCachePrefix}${doc_ts}`));
     }
 
     run(doc) {
@@ -110,7 +64,7 @@ class CacheManager {
                 reject();
             } else {
                 doc.url = url;
-                this.runPlugins(doc).then(resolve).catch(reject);
+                return this.runPlugins(doc);
             }
         });
     }
@@ -129,7 +83,6 @@ class CacheManager {
         } else {
             if(plug.canHandle(doc.url)) {
                 plug.process(doc.url, (result) => {
-                    logger.verbose('runPlugins', 'Result for ' + plug.constructor.name, result);
                     if(!result) {
                         this.runPlugins(doc, ++index, resolve, reject, p);
                     } else {
@@ -137,7 +90,6 @@ class CacheManager {
                             doc.url = result;
                             this.runPlugins(doc, ++index, resolve, reject, p);
                         } else {
-                            logger.verbose('runPlugins', 'Resolving');
                             resolve(this.addMeta(result, doc));
                         }
                     }
