@@ -71,7 +71,7 @@ systems({
         ],
         workdir: '/azk/#{manifest.dir}',
         shell: '/bin/bash',
-        command: "node --use_strict src/prefetch/processor.js",
+        command: "node --use_strict src/prefetch/prefetch.js",
         wait: 20,
         mounts: {
             '/azk/#{manifest.dir}': sync('.'),
