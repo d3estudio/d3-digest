@@ -70,14 +70,14 @@ class Proc {
     }
 
     requestPrefetch(doc) {
-        this.redis.rpush(settings.prefetchQueueName, JSON.stringify({
+        return this.redis.rpush(settings.prefetchQueueName, JSON.stringify({
             type: 'prefetch_item',
             ts: doc.ts
         }));
     }
 
     requestPurge(doc) {
-        this.redis.rpush(settings.prefetchQueueName, JSON.stringify({
+        return this.redis.rpush(settings.prefetchQueueName, JSON.stringify({
             type: 'purge_item',
             ts: doc.ts
         }));
