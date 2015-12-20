@@ -33,7 +33,6 @@ class Parser {
                     docs = docs
                         .filter((d) => !Object.keys(d.reactions).some((r) => settings.silencerEmojis.indexOf(r) > -1))
                         .map((d) => {
-                            logger.warn('parser', `Mapping D:`, d);
                             return new Promise((resolve) => {
                                 this.memcached.get(`${settings.itemCachePrefix}${d.ts}`, (err, j) => {
                                     if(err || !j) {

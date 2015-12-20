@@ -47,7 +47,7 @@ class Pref {
             case 'prefetch_item':
                 this.cacheManager.updateItemCacheForDocument(data.ts)
                     .then(() => {
-                        logger.warn('loop', `CacheManager updated document ${data.ts}`);
+                        logger.verbose('loop', `CacheManager updated document ${data.ts}`);
                     })
                     .catch((ex) => {
                         logger.warn('loop', `CacheManager rejected update promise of ${data.ts}: `, ex);
@@ -60,7 +60,7 @@ class Pref {
                             return this.cacheManager.updateItemCacheForDocument(data.ts);
                         })
                         .then(() => {
-                            logger.warn('loop', `CacheManager rebuilt document ${data.ts}`);
+                            logger.verbose('loop', `CacheManager rebuilt document ${data.ts}`);
                         });
                 }).catch(() => {
                     logger.warn('loop', `CacheManager rejected purge promise of ${data.ts}`);
