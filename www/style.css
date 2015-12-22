@@ -13,6 +13,7 @@ img{
 iframe{
     margin-bottom: -5px;
     background: #fff;
+    width: 100%;
 }
 #content_wrapper a, #content_wrapper a:visited{
     text-decoration: none;
