@@ -57,7 +57,7 @@ html:not(.canvas) #page_cover {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 50% 50%;
-    text-shadow: 0px 0px 30px rgba(0, 0, 0, 0.7);
+    /*text-shadow: 0px 0px 30px rgba(0, 0, 0, 0.7);*/
 }
     .cover_pattern{
         background-image: url("images/bg_pattern.png");
