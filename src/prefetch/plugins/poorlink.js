@@ -1,7 +1,8 @@
 var Plugin = require('./baseplugin'),
     request = require('request-promise'),
     cheerio = require('cheerio'),
-    sizeOf = require('image-size');
+    sizeOf = require('image-size'),
+    URL = require('url');
 
 class PoorLink extends Plugin {
     canHandle() {
@@ -45,6 +46,7 @@ class PoorLink extends Plugin {
             .then(result => {
                 if(result && result.title && result.image && result.summary) {
                     result.type = 'rich-link';
+                    result.image = URL.resolve(url, result.image);
                     return this.processImageSize(result);
                 }
                 return result;
