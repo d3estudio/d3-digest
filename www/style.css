@@ -415,6 +415,7 @@ footer{
     bottom: 0;
     padding: 10px 5%;
     width: 90%;
+    opacity: 0;
 }
     footer nav a{
         color: #ccc;
