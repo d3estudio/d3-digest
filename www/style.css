@@ -110,6 +110,8 @@ html:not(.canvas) #page_cover {
             margin: 8px;
         }
         .cover_description{
+            margin-top: 10px;
+            font-size: 13px;
             text-transform: uppercase;
         }
 
