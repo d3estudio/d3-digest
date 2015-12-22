@@ -412,19 +412,24 @@ html:not(.canvas) #page_cover {
 /**** Footer ****/
 footer{
     text-align: center;
-    padding: 20px 0 20px;
-    position: relative;
+    position: fixed;
     z-index: 9;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.8) none repeat scroll 0 0;
+    bottom: 0;
+    padding: 10px 5%;
+    width: 90%;
 }
     footer nav a{
-        color: #131313;
+        color: #ccc;
         font-family: 'PT Serif Caption', serif;
         font-style: italic;
         text-decoration: none;
     }
         footer nav a:after{
-            content: " # ";
-            color: #414141;
+            content: "#";
+            color: #888;
+            margin:0 12px;
         }
             footer nav a:last-child:after{
                 content: "";

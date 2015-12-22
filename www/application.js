@@ -305,6 +305,7 @@ $(function() {
     var fadeStart  = 0,
         fadeUntil  = Math.max(1, screen.height / 2),
         fadeTarget = $('#page_cover header, .cover_pattern'),
+        fadeFooter = $('footer'),
         $document  = $(document),
         controller = new Controller(),
         scrollHandler = $.debounce(controller.handleScroll.bind(controller), 300),
@@ -328,5 +329,6 @@ $(function() {
             opacity = 1 - offset / fadeUntil;
         }
         fadeTarget.css('opacity', opacity);
+        fadeFooter.css('opacity', 1 - opacity);
     });
 });
