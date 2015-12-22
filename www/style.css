@@ -423,6 +423,9 @@ footer{
         text-decoration: none;
         display: inline-block;
     }
+        footer nav a:hover{
+            color: #fff;
+        }
         footer nav a:after{
             content: "#";
             color: #888;
