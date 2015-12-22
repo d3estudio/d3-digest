@@ -1,7 +1,8 @@
 var Plugin = require('./baseplugin'),
     request = require('request'),
     cheerio = require('cheerio'),
-    sizeOf = require('image-size');
+    sizeOf = require('image-size'),
+    URL = require('url');
 
 class PoorLink extends Plugin {
     canHandle() {
@@ -50,6 +51,12 @@ class PoorLink extends Plugin {
             });
             if(result && result.title && result.image && result.summary) {
                 result.type = 'rich-link';
+                // Try to normalize image URL in case it uses an relative address
+                try {
+                    result.image = URL.resolve(url, result.image);
+                } catch(ex) {
+                    this.logger.error('poorLink', `Image URL normalisation for URL ${url} failed. Image base URL was ${result.image}`, ex);
+                }
                 this.processImageSize(result, callback);
                 return;
             } else {
