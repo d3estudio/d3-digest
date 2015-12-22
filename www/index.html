@@ -46,7 +46,9 @@
             <div id="digest-{{ id }}" class="content_box grid-item" data-item-type="{{ type }}">
                 {{> reactions }}
                 <div class="content_image">
-                    <img src="{{ image }}" alt="{{ title }}">
+                    <a target="_blank" href="{{ url }}" alt="{{ title }}" title="{{ title }}">
+                        <img src="{{ image }}" alt="{{ title }}">
+                    </a>
                 </div>
                 <a target="_blank" href="{{ url }}" alt="{{ title }}" title="{{ title }}">
                     <div class="content_meta ">
@@ -91,7 +93,9 @@
             <div id="digest-{{ id }}" class="content_box grid-item" data-item-type="{{ item.type }}">
                 {{> reactions }}
                 <div class="content_image">
-                    <img src="{{ img }}" alt="{{ title }}">
+                    <a target="_blank" href="{{ url }}" alt="{{ title }}" title="{{ title }}">
+                        <img src="{{ img }}" alt="{{ title }}">
+                    </a>
                 </div>
                 <a target="_blank" href="{{ link }}" alt="{{ title }}" title="{{ title }}">
                     <div class="content_meta">
