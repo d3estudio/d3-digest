@@ -425,6 +425,7 @@ footer{
         font-family: 'PT Serif Caption', serif;
         font-style: italic;
         text-decoration: none;
+        display: inline-block;
     }
         footer nav a:after{
             content: "#";
