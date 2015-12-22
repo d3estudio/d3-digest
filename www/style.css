@@ -233,16 +233,23 @@ canvas { position: fixed; }
 }
     .content_reactions .reactions_title{
         background: #6fd09c;
-        padding: 10px 16px;
+        display: inline-block;
+        font-family: "PT Serif Caption",serif;
         font-size: 12px;
-        font-family: 'PT Serif Caption', serif;
         font-style: italic;
         line-height: 12px;
-        display: none;
+        overflow: hidden;
+
+        max-width: 0px;
+        padding: 10px 0px;
+
+        transition: max-width 100ms ease-out 0s;
+        transition: padding 100ms ease-out 0s;
     }
         .content_box:hover .content_reactions .reactions_title{
-            display: inline-block;
+            /*display: inline-block;*/
             max-width: 18%;
+            padding: 10px 16px;
         }
             .content_box:hover .content_reactions .reactions{
                 max-width: 54%;
