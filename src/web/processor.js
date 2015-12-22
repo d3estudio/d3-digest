@@ -240,7 +240,6 @@ class Processor {
                 .map((o) => o.repr);
             return u;
         });
-        context.items = context.items.sort((a, b) => b.totalReactions - a.totalReactions);
         callback(null, context);
     }
 }
