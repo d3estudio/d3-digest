@@ -43,10 +43,7 @@ class Parser {
         this.logger.verbose('parser', `Selecting ${this.settings.outputLimit} after ${skipping} items...`);
         this.mongo.perform((db, dbCallback) => {
             var query = {},
-                opts = {
-                    limit: this.settings.outputLimit,
-                    sort: 'date'
-                };
+                opts = {};
             if(!this.settings.showLinksWithoutReaction) {
                 query.$where = 'Object.keys(this.reactions).length > 0';
             }
@@ -54,7 +51,7 @@ class Parser {
                 opts.skip = skipping;
             }
 
-            db.collection('items').find(query, opts).toArray((err, docs) => {
+            db.collection('items').find(query, opts).sort({ date: -1 }).limit(this.settings.outputLimit).toArray((err, docs) => {
                 if(err) {
                     callback(err, null);
                 } else {
