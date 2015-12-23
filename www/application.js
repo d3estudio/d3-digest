@@ -144,7 +144,7 @@ Controller.prototype.load = function() {
 };
 
 Controller.prototype.handleScroll = function() {
-    if(this.window.scrollTop() + this.window.height() > this.document.height() - 100) {
+    if(this.window.scrollTop() + this.window.height() > this.document.height() - this.window.height()) {
         this.load();
     }
 }
