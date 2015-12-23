@@ -87,6 +87,9 @@ class CacheManager {
                         }
                     }, (ex) => {
                         logger.warn('runPlugins', `${plug.constructor.name} faulted: `, ex ? ex.message : 'No information provided.');
+                        if(ex) {
+                            logger.error('runPlugins', `${plug.constructor.name} error:`, ex);
+                        }
                         return this.runPlugins(doc, ++index);
                     });
             } else {
