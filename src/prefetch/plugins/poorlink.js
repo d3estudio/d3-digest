@@ -20,7 +20,7 @@ class PoorLink extends Plugin {
                     .toArray()
                     .filter(i => i.attribs && Object.keys(i.attribs).indexOf('http-equiv') > -1)
                     .filter(i => i.attribs['http-equiv'].toLowerCase() === 'content-type')
-                    .map(i => i.attribs['content'])[0]
+                    .map(i => i.attribs['content'])[0];
                 return this.extractCharsetFromContentType(item);
             },
             body => body('meta[charset]').first().attr('charset')
@@ -54,7 +54,7 @@ class PoorLink extends Plugin {
             result = ct.split(';')
                 .filter(i => i.indexOf('=') > -1)
                 .map(i => i.trim().split('='))
-                .filter(i => i[0].toLowerCase() === 'charset')[0]
+                .filter(i => i[0].toLowerCase() === 'charset')[0];
             if(result) {
                 result = result[1].trim();
             }
@@ -82,7 +82,7 @@ class PoorLink extends Plugin {
                     response.utf8Dom = this.loadHtml(this.utf8Decoder.write(response.body));
                     var encoding = this.metaEncodingFinders
                         .map(func => func(response.utf8Dom))
-                        .filter(r => r)[0]
+                        .filter(r => r)[0];
                     if(encoding) {
                         response.detectedEncoding = encoding;
                     }
