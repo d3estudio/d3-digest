@@ -225,5 +225,7 @@ $(function() {
         }
         fadeTarget.css('opacity', opacity);
         fadeFooter.css('opacity', 1 - opacity);
+
+        $("#scroll_helper").remove();
     });
 });

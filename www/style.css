@@ -412,6 +412,16 @@ canvas { position: fixed; }
             font-size: 10px;
         }
 
+#scroll_helper{
+    display: block;
+    /*Animar via CSS, retirar gif*/
+    background: url("images/scroll-indication.gif") no-repeat 50% 50%;
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+    height: 20px;
+}
+
 /**********************************
 /**** Footer ****/
 footer{
