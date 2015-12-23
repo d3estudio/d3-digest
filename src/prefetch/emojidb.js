@@ -104,7 +104,7 @@ class EmojiDb {
         return new Promise((resolve) => {
             if(EmojiDb.baseEmojis) {
                 var item = EmojiDb.baseEmojis.find((e) => e.aliases.indexOf(name) > -1);
-                if(item.emoji) {
+                if(item && item.emoji) {
                     resolve(item.emoji);
                     return;
                 }
