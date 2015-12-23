@@ -1,43 +1,29 @@
 // Marked to removal
-var MongoClient = require('mongodb').MongoClient;
+var MongoClient = require('mongodb').MongoClient,
+    settings = require('./settings').sharedInstance(),
+    logger = require('npmlog');
 
 class Mongo {
-    constructor(url, logger) {
-        this.driver = null;
-        this.logger = logger;
-        this.queue = [];
-        this.performing = false;
-        MongoClient.connect(url, (err, db) => {
-            if(err) {
-                this.logger.error('Mongo', 'Error connecting to MongoDB instance: ', err);
-                return;
-            }
-            this.driver = db;
-            this.logger.verbose('Mongo', `Connected: ${url}`);
-            this._processQueue();
-        });
-    }
-
-    isConnected() {
-        return this.driver !== null;
-    }
-
-    perform(func) {
-        if(!this.driver) {
-            this.queue.push(func);
-        } else {
-            func(this.driver, function() {});
-        }
-    }
-
-    _processQueue() {
-        this.queue.forEach((func) => {
-            try {
-                func(this.driver, function() {});
-            } catch(ex) {
-                this.logger.error('Mongo', 'Error performing operation: ', ex);
+    static prepare() {
+        return new Promise((resolve, reject) => {
+            if(!Mongo.db) {
+                MongoClient.connect(settings.mongoUrl, (err, db) => {
+                    if(err) {
+                        logger.error('Mongo', 'Error connecting to MongoDB instance: ', err);
+                        reject();
+                    } else {
+                        logger.verbose('Mongo', `Connected: ${settings.mongoUrl}`);
+                        Mongo.db = db;
+                        resolve();
+                    }
+                });
+            } else {
+                resolve();
             }
         });
+    }
+    static sharedInstance() {
+        return Mongo.db;
     }
 }
 

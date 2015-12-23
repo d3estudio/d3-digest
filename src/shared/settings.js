@@ -1,6 +1,7 @@
 var fs = require('fs'),
     Path = require('path'),
-    logger = require('npmlog');
+    logger = require('npmlog'),
+    Singleton = require('./singleton');
 
 var defaultSettings = {
     token: '',
@@ -14,7 +15,13 @@ var defaultSettings = {
     redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
     outputLimit: 20,
     timezone: 'America/Sao_Paulo',
-    showLinksWithoutReaction: false
+    showLinksWithoutReaction: false,
+    notificationChannel: 'digest_notifications',
+    processQueueName: 'digest_process_queue',
+    prefetchQueueName: 'digest_prefetch_queue',
+    errorQueueNane: 'digest_error_queue',
+    metaCachePrefix: 'd-m-',
+    itemCachePrefix: 'd-i-'
 };
 
 class Settings {
@@ -83,7 +90,8 @@ class Settings {
                 this._channels = settings.channels;
             }
         });
+        logger.level = this.loggerLevel;
     }
 }
 
-module.exports = Settings;
+module.exports = new Singleton(Settings);

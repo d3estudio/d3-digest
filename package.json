@@ -31,6 +31,7 @@
     "cheerio": "^0.19.0",
     "commander": "^2.9.0",
     "express": "^4.13.3",
+    "iconv": "^2.1.11",
     "image-size": "^0.4.0",
     "inflection": "^1.7.2",
     "ioredis": "^1.13.0",
@@ -42,6 +43,7 @@
     "npmlog": "^2.0.0",
     "nunjucks": "^2.2.0",
     "open-graph": "git+https://git@github.com/victorgama/node-open-graph.git",
+    "request-promise": "^1.0.2",
     "slack-client": "^1.4.1",
     "thenBy.js": "git+https://git@github.com/Teun/thenBy.js.git",
     "unfurl-url": "^1.0.0",
@@ -51,7 +53,8 @@
     "eslint": "^1.10.2"
   },
   "scripts": {
-    "linter": "find src -name *.js | xargs node_modules/.bin/eslint",
-    "test": "npm run linter"
+    "linter": "find src -name '*.js' | xargs node_modules/.bin/eslint",
+    "test": "npm run linter",
+    "flush": "node --use_strict src/shared/flush.js"
   }
 }
