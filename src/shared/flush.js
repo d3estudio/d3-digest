@@ -44,7 +44,7 @@ var perform = function() {
 
     logger.info('Flush', 'Performing step 1/4: Obtaining database items...');
     collection
-        .find({ $where: "Object.keys(this).indexOf(\"ready\") === -1 || this.ready" })
+        .find({ $where: 'Object.keys(this).indexOf("ready") === -1 || this.ready' })
         .project({ ts: 1 })
         .toArray()
         .then(arr => arr.map(i => i.ts))
