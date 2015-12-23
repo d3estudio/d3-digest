@@ -116,8 +116,8 @@ class PoorLink extends Plugin {
                             html = response.body.toString();
                         }
                     }
-                    return this.loadHtml(html);
                 }
+                return this.loadHtml(html);
             })
             .then($ => {
                 var result = {}, r;
