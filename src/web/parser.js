@@ -9,7 +9,7 @@ class Parser {
     itemsInRange(skipping) {
         logger.verbose('parser', `Selecting ${settings.outputLimit} after ${skipping} items...`);
         var query = { ready: true },
-            opts = { limit: settings.outputLimit, sort: 'date' };
+            opts = { };
 
         if(!settings.showLinksWithoutReaction) {
             query.$where = 'Object.keys(this.reactions).length > 0';
@@ -21,6 +21,8 @@ class Parser {
 
         return Mongo.collection('items')
             .find(query, opts)
+            .limit(settings.outputLimit)
+            .sort({ 'date': -1 })
             .toArray()
             .then(docs => {
                 logger.verbose('parser', `Acquired ${docs.length} documents`);
