@@ -1,6 +1,12 @@
 /*eslint no-console: 0*/
+
+/**
+ * Prints the D3Digest header
+ * @param  {String}   component   Name of the component calling the header
+ * @return {undefined}
+ */
 var header = function(component) {
-    console.log(['                                                                                ',
+    console.log(['',
    '⣿⡟⠛⠛⠛⠟⠿⣿⣶⣀⠀⠀⠀⣴⣿⠟⠛⠛⠛⠿⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
    '⣿⡆⠀⠀⠀⠀⠀⠀⠀⠛⣿⡄⠀⠁⠀⠀⠀⠀⠀⠀⠀⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
    '⣿⡆⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⠀⠀⠀⠀⠀⠀⠀⠀⣰⡿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀',
