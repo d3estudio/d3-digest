@@ -4,7 +4,19 @@ var Mongo = require('../shared/mongo').sharedInstance(),
     Redis = require('ioredis'),
     URI = require('urijs');
 
+/**
+ * The Proc class is reponsible for receiving items from the Collector process and
+ * acting accordingly, by incrementing and decrementing reaction counts, inserting,
+ * updating and removing items from the database, and notifying other processes of
+ * changes on these affected objects.
+ */
 class Proc {
+
+    /**
+     * Initialises a new instance of this class, connects to Redis server and
+     * waits for information to be processed.
+     * @return {Proc} A new instance of this class
+     */
     constructor() {
         logger.verbose('Proc', `Connecting to Redis @ ${settings.redisUrl}...`);
         this.redis = new Redis(settings.redisUrl);
@@ -16,6 +28,17 @@ class Proc {
         this.loop();
     }
 
+
+    /**
+     * Ensures a given function finishes and invokes a callback in order to allow
+     * the next enqueued item to be processed. In case of noncompliance, the next
+     * item is dequeued after the given timeout, and the function is prevented from
+     * dequeuing the next item.
+     * @param  {Function}   func        Function to be monitored
+     * @param  {Number}     timeout     Timeout, in milliseconds, in which the function must
+     *                                  finish its execution and invoke the callback.
+     * @return {undefined}
+     */
     guardProcess(func, timeout) {
         var released = false,
             releaseTime = null,
@@ -46,6 +69,11 @@ class Proc {
         func(callback);
     }
 
+    /**
+     * Waits until there's an item to be dequeued, dequeues it and sets a guard to ensure
+     * its execution does not takes longer than 30 seconds.
+     * @return {undefined}
+     */
     loop() {
         this.redis.blpop(settings.processQueueName, 0, (err, data) => {
             try {
@@ -69,6 +97,12 @@ class Proc {
         });
     }
 
+    /**
+     * Requests a prefetch operation to the Prefetch process for a given document
+     * @param  {object}     doc     Document to which the prefetch will be requested
+     * @return {Promise}            A Redis Promise that will be resolved after the item is
+     *                              enqueued on the Prefetch queue
+     */
     requestPrefetch(doc) {
         return this.redis.rpush(settings.prefetchQueueName, JSON.stringify({
             type: 'prefetch_item',
@@ -76,6 +110,14 @@ class Proc {
         }));
     }
 
+    /**
+     * Requests a prefetched document to have its metadata and compiled data removed from the
+     * Memcached server. Please notice that this operation is attended by the Prefetch process
+     * and does not only removes the item from the memcached server.
+     * @param  {object}     doc     Document that will be removed from the memcached server
+     * @return {Promise}            A Redis Promise that will be resolved after the item is
+     *                              enqueued on the Prefetch queue.
+     */
     requestPurge(doc) {
         return this.redis.rpush(settings.prefetchQueueName, JSON.stringify({
             type: 'purge_item',
@@ -83,6 +125,12 @@ class Proc {
         }));
     }
 
+    /**
+     * Processes a given slack payload
+     * @param  {object}     msg         Preprocessed Slack message coming from the Collector process
+     * @param  {Function}   callback    Guard callback passed by the guardProcess function.
+     * @return {undefined}
+     */
     process(msg, callback) {
         if(!msg) {
             callback();
@@ -204,6 +252,12 @@ class Proc {
         }
     }
 
+    /**
+     * Normalises a received slack message to a format that can be stored in the database.
+     * @param  {object}         msg     Preprocessed Slack message that will be normalised
+     *                                  to the MongoDB storage
+     * @return {object}                 Normalised message
+     */
     objectForMessage(msg) {
         return {
             ts: msg.ts,
