@@ -187,7 +187,7 @@ $(function() {
             opts = opts.fn(this);
         }
         var regex = /(?:https?:\/\/)?([^\/]+).*/;
-        if(regex.match(opts)) {
+        if(regex.test(opts)) {
             opts = regex.exec(opts)[1];
         }
         return opts;
