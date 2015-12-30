@@ -33,7 +33,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/twemoji/1.3.2/twemoji.min.js"></script>
 
         <script data-template-partial="reactions" type="text/x-handlebars-template">
-            <div id="digest-{{ id }}" class="content_reactions">
+            <div id="digest-{{ _id }}" class="content_reactions">
                 <div class="reactions_title"><strong>D3</strong>reactions</div>
                 <ul class="reactions">
                     {{#each reactions}}
@@ -43,7 +43,7 @@
             </div>
         </script>
         <script data-template="rich-link" type="text/x-handlebars-template">
-            <div id="digest-{{ id }}" class="content_box grid-item" data-item-type="{{ type }}">
+            <div id="digest-{{ _id }}" class="content_box grid-item" data-item-type="{{ type }}">
                 {{> reactions }}
                 <div class="content_image">
                     <a target="_blank" href="{{ url }}" alt="{{ title }}" title="{{ title }}">
@@ -59,7 +59,7 @@
             </div>
         </script>
         <script data-template="poor-link" type="text/x-handlebars-template">
-            <div id="digest-{{ id }}" class="content_box simple grid-item" data-item-type="{{ type }}">
+            <div id="digest-{{ _id }}" class="content_box simple grid-item" data-item-type="{{ type }}">
                 {{> reactions }}
                 <a target="_blank" href="{{ url }}" alt="{{ title }}" title="{{ title }}">
                     <div class="content_meta">
@@ -70,7 +70,7 @@
             </div>
         </script>
         <script data-template="youtube,vimeo" type="text/x-handlebars-template">
-            <div id="digest-{{ id }}" class="content_box grid-item" data-item-type="{{ type }}">
+            <div id="digest-{{ _id }}" class="content_box grid-item" data-item-type="{{ type }}">
                 {{> reactions }}
                 {{{ html }}}
                 <a target="_blank" href="{{ url }}" alt="{{ title }}" title="{{ title }}">
@@ -84,13 +84,13 @@
             </div>
         </script>
         <script data-template="tweet,spotify" type="text/x-handlebars-template">
-            <div id="digest-{{ id }}" class="content_box simple_dark embed grid-item" data-item-type="{{ type }}">
+            <div id="digest-{{ _id }}" class="content_box simple_dark embed grid-item" data-item-type="{{ type }}">
                 {{> reactions }}
                 {{{ html }}}
             </div>
         </script>
         <script data-template="xkcd" type="text/x-handlebars-template">
-            <div id="digest-{{ id }}" class="content_box grid-item" data-item-type="{{ item.type }}">
+            <div id="digest-{{ _id }}" class="content_box grid-item" data-item-type="{{ item.type }}">
                 {{> reactions }}
                 <div class="content_image">
                     <a target="_blank" href="{{ link }}" alt="{{ title }}" title="{{ title }}">
