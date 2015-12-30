@@ -160,32 +160,37 @@ Controller.prototype.fixHeaderHeight = function() {
 }
 
 $(function() {
-    Handlebars.registerHelper('truncate', function(options) {
-        var value = options.data.root.summary;
-        if(value.length > 255) {
-            var parts = value.split(' '),
+    Handlebars.registerHelper('truncate', function(opts) {
+        if(typeof opts === 'object') {
+            opts = opts.fn(this);
+        }
+
+        if(opts.length > 255) {
+            var parts = opts.split(' '),
                 part;
-            value = '';
+            opts = [];
             while(parts) {
                 part = parts.shift();
-                if(value.length + part.length > 255) {
-                    value += '...';
+                if(opts.join(' ').length + part.length > 255) {
                     break;
-                } else {
-                    value += ' ' + part;
                 }
+                opts.push(part);
             }
+            opts = opts.join(' ') + '...';
         }
-        return value;
+
+        return opts;
     });
-    Handlebars.registerHelper('domain', function(options) {
-        var value = options.fn(this),
-            regex = /(?:https?:\/\/)?([^\/]+).*/;
-        if(regex.test(value)) {
-            var match = regex.exec(value);
-            value = regex[1];
+
+    Handlebars.registerHelper('domain', function(opts) {
+        if(typeof opts === 'object') {
+            opts = opts.fn(this);
         }
-        return value;
+        var regex = /(?:https?:\/\/)?([^\/]+).*/;
+        if(regex.match(opts)) {
+            opts = regex.exec(opts)[1];
+        }
+        return opts;
     });
 
     $.debounce = function(func, wait) {
