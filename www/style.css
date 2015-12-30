@@ -212,7 +212,7 @@ canvas { position: fixed; }
     .content_url{
         padding: 10px 16px;
         border-radius: 10px;
-        margin: 0 26px 10px 26px;
+        margin: 0 26px;
     }
         .content_description, .content_url{
             font-size: 12px;
@@ -357,6 +357,7 @@ canvas { position: fixed; }
 
 .grid-item.simple .content_meta {
     min-height: 110px;
+    padding-bottom: 10px;
 }
 
 .grid-item.simple:nth-child(odd) .content_meta {
@@ -365,7 +366,7 @@ canvas { position: fixed; }
     }
 
     .grid-item.simple:nth-child(odd) .content_url {
-        background: #d22f5c;
+        background: #c52c56;
     }
 
     .grid-item.simple:nth-child(odd) a .content_tittle, .grid-item.simple:nth-child(odd) a:visited .content_tittle {
