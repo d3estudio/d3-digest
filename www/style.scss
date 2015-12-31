@@ -136,6 +136,7 @@ canvas {
         img {
             width: 100%;
             height: auto;
+            background: #fff;
         }
 
         .content-meta {
@@ -154,7 +155,7 @@ canvas {
 
             .content-description {
                 color: #1b1b1b;
-                background: #fcfcfc;
+                background: #fafafa;
                 padding: 14px 30px 30px 30px;
             }
 
@@ -269,7 +270,7 @@ canvas {
 
         &:nth-child(odd) {
             .content-meta {
-                background: #d73360;
+                background: #d73360!important;
                 color: #fff;
             }
             .content-url { background: #c52c56; }
@@ -280,7 +281,7 @@ canvas {
         }
 
         &:nth-child(even) {
-            .content-meta   { background: #131313; }
+            .content-meta   { background: #131313!important; }
             .content-url    { color: #222; }
             a, a:visited {
                 .content-title  { color: #c6c6c6; }
