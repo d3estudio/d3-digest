@@ -25,8 +25,7 @@ var run = function() {
         src: wwwRoot,
         outputStyle: isDebug ? 'nested' : 'compressed',
         force: isDebug,
-        debug: isDebug,
-        prefix: '/style'
+        debug: isDebug
     }));
 
     app.use(express.static(wwwRoot));
