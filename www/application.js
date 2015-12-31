@@ -7,7 +7,7 @@ var Controller = function() {
     this.$ = $(this);
     this.window = $(window);
     this.document = $(document);
-    this.content = $('#page_content');
+    this.content = $('#page-content');
     var that = this;
     $('[data-template-partial]:not([data-registered])').each(function() {
         var item = $(this);
@@ -210,7 +210,7 @@ $(function() {
 
     var fadeStart  = 0,
         fadeUntil  = Math.max(1, screen.height / 2),
-        fadeTarget = $('#page_cover header, .cover_pattern'),
+        fadeTarget = $('#page-cover header, .cover-pattern'),
         fadeFooter = $('footer'),
         $document  = $(document),
         controller = new Controller(),
@@ -231,6 +231,6 @@ $(function() {
         fadeTarget.css('opacity', opacity);
         fadeFooter.css('opacity', 1 - opacity);
 
-        $("#scroll_helper").remove();
+        $("#scroll-helper").remove();
     });
 });

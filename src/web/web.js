@@ -1,7 +1,8 @@
 var logger = require('npmlog'),
     express = require('express'),
     Path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    sassMiddleware = require('node-sass-middleware');
 
 var settings = require('../shared/settings').sharedInstance(),
     Mongo = require('../shared/mongo');
@@ -10,7 +11,9 @@ var run = function() {
     logger.info('web', 'Configuring express...');
     var app = express(),
         Parser = require('./parser'),
-        parser = new Parser();
+        parser = new Parser(),
+        wwwRoot = Path.join(__dirname, '..', '..', 'www'),
+        isDebug = process.env['NODE_ENV'] === 'dev';
 
     app.use(function(req, res, next) {
         res.header('Access-Control-Allow-Origin', '*');
@@ -18,10 +21,18 @@ var run = function() {
         next();
     });
 
-    app.use(express.static(Path.join(__dirname, '..', '..', 'www')));
+    app.use(sassMiddleware({
+        src: wwwRoot,
+        outputStyle: isDebug ? 'nested' : 'compressed',
+        force: isDebug,
+        debug: isDebug,
+        prefix: '/style'
+    }));
+
+    app.use(express.static(wwwRoot));
 
     app.get('/', (req, res) => {
-        var index = Path.join(__dirname, '..', '..', 'www', 'index.html');
+        var index = Path.join(wwwRoot, 'index.html');
         res.send(fs.readFileSync(index), 'text/html');
     });
 

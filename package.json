@@ -40,6 +40,7 @@
     "moment-timezone": "^0.4.1",
     "mongodb": "^2.1.0",
     "nedb": "^1.4.0",
+    "node-sass-middleware": "^0.9.7",
     "npmlog": "^2.0.0",
     "nunjucks": "^2.2.0",
     "open-graph": "git+https://git@github.com/victorgama/node-open-graph.git",
