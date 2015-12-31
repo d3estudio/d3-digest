@@ -209,7 +209,7 @@ canvas {
             }
 
             .reactions {
-                background: #f1f1f1;
+                background: #fff;
                 border-radius: 2px 2px 0 0;
                 margin: 0;
                 padding: 8px 20px;
@@ -271,21 +271,21 @@ canvas {
         &:nth-child(odd) {
             .content-meta {
                 background: #d73360!important;
-                color: #fff;
+                color: #fff!important;
             }
-            .content-url { background: #c52c56; }
+            .content-url { background: #c52c56!important; }
             a, a:visited {
-                .content-title  { color: #ffffff; }
-                .content-url    { color: #ffdee7; }
+                .content-title  { color: #ffffff!important; }
+                .content-url    { color: #ffdee7!important; }
             }
         }
 
         &:nth-child(even) {
             .content-meta   { background: #131313!important; }
-            .content-url    { color: #222; }
+            .content-url    { color: #222!important; }
             a, a:visited {
-                .content-title  { color: #c6c6c6; }
-                .content-url    { color: #999999; }
+                .content-title  { color: #c6c6c6!important; }
+                .content-url    { color: #999999!important; }
             }
         }
     }
