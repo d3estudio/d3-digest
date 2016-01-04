@@ -1,6 +1,4 @@
-# D3 Digest
-
-<p align="center">
+<p align="center"><img src="https://raw.githubusercontent.com/d3estudio/d3-digest/master/digest-logo.png" /><br/>
    <a href="https://travis-ci.org/d3estudio/d3-digest"><img src="https://img.shields.io/travis/d3estudio/d3-digest.svg" alt="Build Status"></a>
    <img src="https://img.shields.io/david/d3estudio/d3-digest.svg" alt="Dependency status" />
    <img alt="Language" src="https://img.shields.io/badge/language-JS6-yellow.svg" />
@@ -26,8 +24,7 @@ The development environment is managed by [Azk](http://azk.io), which handles Do
       1. Head to [Slack Team Customization Page](http://my.slack.com/services/new/bot) and create a new bot and get its token.
       2. Fill the `token` property on the recently-generated `settings` file.
    5. Start applications you want:
-      1. To start the `watcher` process, that connects to Slack and watches predefined channels (please refer to the list below), run `azk start watcher`.
-      2. To start the `web` process, that allows you to see collected links and reactions, run `azk start web`.
+      1. Run `azk start`. It will start several services, like MongoDB, Redis, along with the Digest processes.
    6. To check system status, use `azk status`. This command will also shows hostnames and ports.
 
 > **Note**: You can also open the web application by running `azk open web`.
@@ -66,22 +63,37 @@ You can customize how your instance works and picks data by changing other confi
  - `memcachedPort`: `String` or `Number`
    - Port where your Memcached server is running.
    - Defaults to `11211`
- - `outputDayRange`: `Number`
-   - Range of days to gather links from. This is used by the web interface to paginate requests for links.
-   - Defaults to `1`.
- - `timezone`: `String`
-   - Timezone of your Slack team.
-   - Defaults to `America/Sao_Paulo`
+ - `outputLimit`: `Number`
+   - Quantity of posts to return on each API iteration. This is used by the web interface to paginate requests for links.
+   - Defaults to `20`.
  - `showLinksWithoutReaction`: `Boolean`
    - Defines the behaviour of the web interface regarding collected links without reactions. When set to `true`, links without reactions will also be shown on the web interface.
    - Defaults to `false`
+ - `notificationChannel`: `String`
+   - Name of the Redis channel used to propagate notification across other Digest processes
+   - Defaults to `digest_notifications`
+ - `processQueueName`: `String`
+   - Name of the Redis set used to queue items for the link processor. (Process named 'processor')
+   - Defaults to `digest_process_queue`
+ - `prefetchQueueName`: `String`
+   - Name of the Redis set used to queue items for the prefetcher mechanism.
+   - Defaults to `digest_prefetch_queue`
+ - `errorQueueName`: `String`
+   - Name of the Redis set used to enqueue failed items. Actually, there's no processes reading from this list, but it is something nice to have, in order to catch problems.
+   - Defaults to `digest_error_queue`
+ - `metaCachePrefix`: `String`
+   - Prefix to be used on Memcached meta items keys.
+   - Defaults to `d-m-`
+ - `itemCachePrefix`: `String`
+   - Prefix to be used on Memcached items keys.
+   - Defaults to `d-i-`
 
 # API
 
 The web server exposes an API that allows the frontend to get links and reactions. The server actually exposes two endpoints:
 
  - `/api/latest`
- - `/api/from/<int>`
+ - `/api/skip/<int>`
 
 Calling any of the listed endpoints will result in the same kind of response, which will have the following structure:
 
