@@ -38,6 +38,7 @@ class Proc {
      * @param  {Number}     timeout     Timeout, in milliseconds, in which the function must
      *                                  finish its execution and invoke the callback.
      * @return {undefined}
+     * @private
      */
     guardProcess(func, timeout) {
         var released = false,
@@ -73,6 +74,7 @@ class Proc {
      * Waits until there's an item to be dequeued, dequeues it and sets a guard to ensure
      * its execution does not takes longer than 30 seconds.
      * @return {undefined}
+     * @private
      */
     loop() {
         this.redis.blpop(settings.processQueueName, 0, (err, data) => {
@@ -102,6 +104,7 @@ class Proc {
      * @param  {object}     doc     Document to which the prefetch will be requested
      * @return {Promise}            A Redis Promise that will be resolved after the item is
      *                              enqueued on the Prefetch queue
+     * @private
      */
     requestPrefetch(doc) {
         return this.redis.rpush(settings.prefetchQueueName, JSON.stringify({
@@ -117,6 +120,7 @@ class Proc {
      * @param  {object}     doc     Document that will be removed from the memcached server
      * @return {Promise}            A Redis Promise that will be resolved after the item is
      *                              enqueued on the Prefetch queue.
+     * @private
      */
     requestPurge(doc) {
         return this.redis.rpush(settings.prefetchQueueName, JSON.stringify({
@@ -130,6 +134,7 @@ class Proc {
      * @param  {object}     msg         Preprocessed Slack message coming from the Collector process
      * @param  {Function}   callback    Guard callback passed by the guardProcess function.
      * @return {undefined}
+     * @private
      */
     process(msg, callback) {
         if(!msg) {
@@ -257,6 +262,7 @@ class Proc {
      * @param  {object}         msg     Preprocessed Slack message that will be normalised
      *                                  to the MongoDB storage
      * @return {object}                 Normalised message
+     * @private
      */
     objectForMessage(msg) {
         return {
