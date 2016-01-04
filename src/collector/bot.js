@@ -76,6 +76,7 @@ class Bot {
      * Silly guard function that wraps function calls in a try/catch block
      * @param  {Function}   func    Function to be wrapped in a try/catch block
      * @return {undefined}
+     * @private
      */
     guard(func) {
         try {
@@ -90,6 +91,7 @@ class Bot {
      * Checks whether a given message is coming from a watched channel
      * @param  {object}     msg     Incoming slack message to be checked
      * @return {bool}   Whether the message belongs to a watched channel or not.
+     * @private
      */
     channelCheck(msg) {
         if(!msg.channel) {
@@ -103,6 +105,7 @@ class Bot {
      * Processes an incoming slack message
      * @param  {object}     msg     Message to be processed
      * @return {undefined}
+     * @private
      */
     processMessage(msg) {
 
