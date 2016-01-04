@@ -6,7 +6,17 @@ var settings = require('../shared/settings').sharedInstance(),
     request = require('request'),
     Mongo;
 
+/**
+ * Manages Emoji representations on text and custom Slack emojis
+ */
 class EmojiDb {
+
+    /**
+     * Prepares the EmojiDb class for handling future requests. This method must be called
+     * before using the singleton through `sharedInstance`.
+     * @return {Promise}    A promise that will be resolved whenever the emoji list is loaded
+     *                      and the emoji collection and aliases are ready.
+     */
     static prepare() {
         Mongo = MongoDb.sharedInstance();
         try {
@@ -31,10 +41,18 @@ class EmojiDb {
             });
     }
 
+    /**
+     * Returns the current singleton instance of this class
+     * @return {EmojiDb}
+     */
     static sharedInstance() {
         return EmojiDb.instance;
     }
 
+    /**
+     * Normalises the aliased emoji entries returned by Slack to their URL values
+     * @return {undefined}      Nothing
+     */
     static normaliseEmojiAliases() {
         logger.verbose('EmojiDb', 'NormaliseAliases: Starting...');
         var emojis = EmojiDb.extraEmoji;
@@ -49,6 +67,14 @@ class EmojiDb {
         logger.verbose('EmojiDb', 'NormaliseAliases: Completed.');
     }
 
+    /**
+     * Fetches the custom Emoji list from Slack and updates the database entries.
+     * This method will refuse to run twice in a period of 10 minutes
+     * @param  {boolean}    force   When true, ignores the 10 minutes check and executes the
+     *                              process right away.
+     * @return {Promise}    A promise that will be resolved whenever custom emojis are acquired
+     *                      from slack and updated on the database.
+     */
     static fetchCustomEmojis(force) {
         logger.verbose('EmojiDb', 'FetchCustomEmojis: Starting...');
         return new Promise((resolve) => {
@@ -98,8 +124,19 @@ class EmojiDb {
         });
     }
 
+    /**
+     * Initialises a new instance of this class
+     * @return {EmojiDB} A new instance of this class.
+     */
     constructor() { }
 
+    /**
+     * Gets a emoji representation or HTML display code based on its name
+     * @param  {string}     name        The name representing a given emoji, custom or not.
+     * @param  {bool}       reentry     Used internally to control recursion.
+     * @return {Promise}    A promise that will be resolved whenever an Emoji is acquired
+     *                      or not. In the second case, `null` will be returned.
+     */
     getEmojiUnicode(name, reentry) {
         return new Promise((resolve) => {
             if(EmojiDb.baseEmojis) {

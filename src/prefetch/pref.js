@@ -5,7 +5,15 @@ var settings = require('../shared/settings').sharedInstance(),
     CacheManager = require('./cachemanager'),
     EmojiDb = require('./emojidb');
 
+/**
+ * Represents the main mechanism of the Prefetch process
+ */
 class Pref {
+
+    /**
+     * Returns a new Prefetch mechanism
+     * @return {Prefetch}   A new instance of this class
+     */
     constructor() {
         logger.info('Pref', 'Trying to load plugins...');
         var pluginLoader = new PluginLoader(settings, logger),
@@ -34,6 +42,17 @@ class Pref {
         this.loop();
     }
 
+    /**
+     * Main process loop. Waits until an item is available in the prefetch redis queue,
+     * dequeues it, and processes it. Actually expects two operations:
+     * - prefetch_item: Updates a given item cache on Memcached based on reactions and previously
+     *                  created metadata. If metadata is absent, it is automatically generated
+     *                  beforehand.
+     * - purge_item:    Unmarks a given item as ready from the database, then generates
+     *                  metadata and precaches its values for the API.
+     * @return {undefined}  Nothing
+     * @private
+     */
     loop() {
         this.redis.blpop(settings.prefetchQueueName, 0)
             .then((data) => {

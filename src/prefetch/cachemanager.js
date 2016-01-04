@@ -5,12 +5,29 @@ var Mongo = require('../shared/mongo').sharedInstance(),
     URI = require('urijs'),
     logger = require('npmlog');
 
+/**
+ * Manages data stored on Memcached and updates item metadata on db.
+ */
 class CacheManager {
+
+    /**
+     * Initialises a new CacheManager instance with a set of plugins
+     * @param  {Array}  plugins     List of plugins to be used when processing new items
+     * @return {CacheManager}   A new instance of this class
+     */
     constructor(plugins) {
         this.plugins = plugins;
         this.collection = Mongo.collection('items');
     }
 
+    /**
+     * Updates an cached item based on stored data.
+     * This method relies on precached metadata. When absent, this metadata will be
+     * generated.
+     * @param  {String}     doc_ts  The ts field of the item that should be updated
+     * @return {Promise}    A promise that will be resolved whenever the update opreation
+     *                      is completed.
+     */
     updateItemCacheForDocument(doc_ts) {
         var document, item, docReactions;
         return this.collection
@@ -35,6 +52,14 @@ class CacheManager {
             .then(() => this.collection.updateOne({ ts: doc_ts }, { $set: { ready: true } }));
     }
 
+    /**
+     * Generates and caches metadata for a given document, after processing its contents
+     * through the provided plugin list.
+     * @param  {String}     doc_ts      The ts field of the item that should have its metadata
+     *                                  generated.
+     * @return {Promise}    A promise that will be resolved whenever the metadata for the given
+     *                      item is generated.
+     */
     generateMetaCacheForDocument(doc_ts) {
         logger.verbose('generateMetaCacheForDocument', 'Running for ', doc_ts);
         return this.collection
@@ -49,6 +74,13 @@ class CacheManager {
             });
     }
 
+    /**
+     * Resets the 'ready' state of a document with a given `ts` to `false`, and removes cached
+     * metadata and item information from Memcached
+     * @param  {string}     doc_ts      The ts field of the item that should be purged.
+     * @return {Promise}    A promise that will be resolved whenever the item status has changed
+     *                      and its cached entries removed.
+     */
     purgeDocument(doc_ts) {
         return this.collection
             .updateOne({ ts: doc_ts }, { $set: { ready: false } })
@@ -56,6 +88,13 @@ class CacheManager {
             .then(() => memcached.del(`${settings.itemCachePrefix}${doc_ts}`));
     }
 
+    /**
+     * Runs the provided plugin list against a given document.
+     * @param  {object}     doc     The document that should be processed by the process list.
+     * @return {Promise}    A promise that will be resolved whenever a plugin matches the
+     *                      provided document's content.
+     * @private
+     */
     run(doc) {
         var url = null;
         URI.withinString(doc.text, (u) => {
@@ -70,6 +109,15 @@ class CacheManager {
         }
     }
 
+    /**
+     * Runs a plugin agains the provided document.
+     * @param  {object}     doc         The document to be processed.
+     * @param  {number}     index       The index of the plugin to be used. This parameter is used
+     *                                  internally.
+     * @return {Promise}    A promise that will be reject as soon as the plugin in the given
+     *                      index finishes processing
+     * @private
+     */
     runPlugins(doc, index) {
         index = index || 0;
         var plug = this.plugins[index];
@@ -98,6 +146,14 @@ class CacheManager {
         }
     }
 
+    /**
+     * Copies a set of properties from the `doc` parameter to `result` parameter,
+     * returning the second one with the new properties.
+     * @param   {object}    result      Item to which a set of properties will be copied to.
+     * @param   {object}    doc         Item in which a set of properties will be copied from.
+     * @return  {object}    The resulting object with a set of properties taken from `doc`.
+     * @private
+     */
     addMeta(result, doc) {
         var copiable = ['user', 'date', 'channel', 'reactions', 'url', '_id'];
         copiable.forEach((k) => result[k] = doc[k]);

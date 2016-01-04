@@ -3,12 +3,24 @@ var fs = require('fs'),
     settings = require('../shared/settings').sharedInstance(),
     logger = require('npmlog');
 
+/**
+ * Manages the available plugins
+ */
 class Plugins {
+
+    /**
+     * Initialises a new manager
+     * @return {Plugins} A new instance of this class
+     */
     constructor() {
         this.pluginsDir = Path.join(__dirname, 'plugins');
         this.ignorablePlugins = ['baseplugin.js'];
     }
 
+    /**
+     * Gets a list of loadable plugins
+     * @return {Array}  List of loadable plugins from the plugins folder
+     */
     listPlugins() {
         return fs.readdirSync(this.pluginsDir)
             .filter((f) => this.ignorablePlugins.indexOf(f) === -1)
@@ -16,6 +28,11 @@ class Plugins {
             .filter((f) => !fs.statSync(f).isDirectory());
     }
 
+    /**
+     * Tries to load a given plugin
+     * @param  {string}     item    Path to the plugin to be loaded
+     * @return {object}     A loaded and initialised plugin instance
+     */
     loadPlugin(item) {
         var plugin = null;
         try {
