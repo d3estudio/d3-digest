@@ -14,7 +14,6 @@ var defaultSettings = {
     memcachedPort: process.env.MEMCACHED_PORT || '11211',
     redisUrl: process.env.REDIS_URL || 'redis://127.0.0.1:6379',
     outputLimit: 20,
-    timezone: 'America/Sao_Paulo',
     showLinksWithoutReaction: false,
     notificationChannel: 'digest_notifications',
     processQueueName: 'digest_process_queue',
