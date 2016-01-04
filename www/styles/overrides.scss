@@ -3,7 +3,7 @@
   components
 *******************/
 
-div[data-item="spotify"] {
+div[data-item-type="spotify"] {
     iframe {
         max-height: 365px!important;
     }
