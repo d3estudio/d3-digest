@@ -3,9 +3,29 @@ var settings = require('../shared/settings').sharedInstance(),
     memcached = require('../shared/memcached').sharedInstance(),
     logger = require('npmlog');
 
+/**
+ * Provides an interface that encapsulates
+ * the db-memcached-querying operation and
+ * formats the results into the structure
+ * that is then returned by the API.
+ */
 class Parser {
+
+    /**
+     * Initialises a new instance of this class
+     * @return {Parser} A new Parser instance, capable of querying and formatting results to the
+     *                  API.
+     */
     constructor() { }
 
+    /**
+     * Queries the database for items maked as ready, maps it through
+     * the pre-processed data stored on Memcached and the formats the results
+     * to the format returned by the API.
+     * @param  {Number} Optional. Defines how many results should be skipped
+     *                  from the database results.
+     * @return {Object} Database items filtered and formatted into the API result.
+     */
     itemsInRange(skipping) {
         logger.verbose('parser', `Selecting ${settings.outputLimit} after ${skipping} items...`);
         var query = { ready: true },
@@ -40,6 +60,12 @@ class Parser {
             });
     }
 
+    /**
+     * Formats database results into the structure returned by the API
+     * @param  {Array}      Array of database results mapped through Memcached
+     * @return {Object}     Results formatted in the API structure
+     * @private
+     */
     digest(result) {
         var context = { users: [], items: [], itemsForUser: { } };
         result.forEach((i) => {
