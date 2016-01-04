@@ -1,0 +1,10 @@
+/******************
+  Overrides for other
+  components
+*******************/
+
+div[data-item="spotify"] {
+    iframe {
+        max-height: 365px!important;
+    }
+}
