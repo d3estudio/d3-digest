@@ -18,7 +18,7 @@ var defaultSettings = {
     notificationChannel: 'digest_notifications',
     processQueueName: 'digest_process_queue',
     prefetchQueueName: 'digest_prefetch_queue',
-    errorQueueNane: 'digest_error_queue',
+    errorQueueName: 'digest_error_queue',
     metaCachePrefix: 'd-m-',
     itemCachePrefix: 'd-i-'
 };
