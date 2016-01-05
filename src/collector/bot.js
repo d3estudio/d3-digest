@@ -62,7 +62,7 @@ class Bot {
 
         // Defines which message types must be accepted
         this.expectedMessages = ['message', 'reaction_added', 'reaction_removed', 'emoji_changed',
-                                'group_joined', 'message_deleted'];
+                                'group_joined', 'channel_joined', 'message_deleted'];
 
         /**
          * Messages which type is defined in this array are checked against the list of watched
@@ -129,7 +129,7 @@ class Bot {
              * process). This will force the process to reload the custom emoji list from Slack.
              */
             this.redis.publish(settings.notificationChannel, 'emoji_changed');
-        } else if(msg.type === 'group_joined') {
+        } else if(msg.type && msg.type.endsWith('_joined')) {
             /**
              * If the bot is invited to a new group or channel, and is configured to auto-watch,
              * watch it and save settings.
