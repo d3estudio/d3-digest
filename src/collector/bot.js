@@ -138,9 +138,9 @@ class Bot {
                 return;
             }
             logger.info('Collector', `Yay! I've been invited to ${msg.channel.name}! Updating settings...`);
-            var channels = this.settings.channels;
+            var channels = settings.channels;
             channels.push(msg.channel.name);
-            this.settings.channels = channels;
+            settings.channels = channels;
             if(this.channels.indexOf(msg.channel.name) === -1) {
                 this.channels.push(msg.channel.name);
             }
