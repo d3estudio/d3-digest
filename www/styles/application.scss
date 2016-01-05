@@ -298,7 +298,7 @@ canvas {
 #scroll-helper {
     display: block;
     // TODO: Replace gif with a CSS animation
-    background: url("images/scroll-indication.gif") no-repeat 50% 50%;
+    background: url("/images/scroll-indication.gif") no-repeat 50% 50%;
     position: fixed;
     bottom: 10px;
     width: 100%;
