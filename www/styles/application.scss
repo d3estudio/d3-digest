@@ -25,19 +25,6 @@ canvas {
     position: fixed;
 }
 
-#content-wrapper {
-    a, a:visited {
-        text-decoration: none;
-    }
-
-    @media (min-width: 1820px)                          { width: 1800px; }
-    @media (min-width: 1520px) and (max-width: 1819px)  { width: 1500px; }
-    @media (min-width: 1220px) and (max-width: 1519px)  { width: 1200px; }
-    @media (min-width: 920px)  and (max-width: 1219px)  { width: 900px; }
-    @media (min-width: 620px)  and (max-width: 919px)   { width: 600px; }
-    @media (max-width: 619px)                           { width: 90%; }
-}
-
 .grid-sizer, .grid-item {
     width: 285px;
     margin: 0 15px 15px 0;
@@ -335,6 +322,19 @@ footer {
             &:last-child:after { content: '' }
         }
     }
+}
+
+#content-wrapper {
+    a, a:visited {
+        text-decoration: none;
+    }
+
+    @media (min-width: 1820px)                          { width: 1800px; }
+    @media (min-width: 1520px) and (max-width: 1819px)  { width: 1500px; }
+    @media (min-width: 1220px) and (max-width: 1519px)  { width: 1200px; }
+    @media (min-width: 920px)  and (max-width: 1219px)  { width: 900px; }
+    @media (min-width: 620px)  and (max-width: 919px)   { width: 600px; }
+    @media (max-width: 619px)                           { width: 90%; }
 }
 
 @import 'extra';
