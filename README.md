@@ -181,6 +181,9 @@ This is a special item kind, that represents an object that could not be parsed 
 
 ----
 
+# Installing
+Installing is quite straightforward. You can follow this (really short) guide [here](https://github.com/d3estudio/d3-digest/wiki/Deploying).
+
 # License
 
 ```
