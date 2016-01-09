@@ -13,7 +13,7 @@ We have been overusing the (relatively) new [Reactions](http://slackhq.com/post/
 
 Well, this is what **D3 Digest** does: it watches channels through a bot and stores messages and their respective reactions.
 
-## Installing
+## Developing
 
 The development environment is managed by [Azk](http://azk.io), which handles Docker and VirtualBox in order to keep everything running smoothly. To get up and running on your machine, follow these steps:
 
@@ -29,6 +29,8 @@ The development environment is managed by [Azk](http://azk.io), which handles Do
 
 > **Note**: You can also open the web application by running `azk open web`.
 
+## Installing
+Installing is quite straightforward. You can follow this (really short) guide [here](https://github.com/d3estudio/d3-digest/wiki/Deploying).
 
 ## Configuration options
 You can customize how your instance works and picks data by changing other configuration options on `settings.json`. See the list below:
@@ -180,9 +182,6 @@ This is a special item kind, that represents an object that could not be parsed 
  - `title`: Item title.
 
 ----
-
-# Installing
-Installing is quite straightforward. You can follow this (really short) guide [here](https://github.com/d3estudio/d3-digest/wiki/Deploying).
 
 # License
 
