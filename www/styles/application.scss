@@ -79,6 +79,8 @@ canvas {
             width: 144px;
             height: 144px;
             background-image: url('/images/d3_logo.png');
+            background-image: -webkit-image-set( url('/images/d3_logo.png') 1x, url('/images/d3-logo@2x.png') 2x);
+
             margin-bottom: 8px;
             position: relative;
             left: 50%;
