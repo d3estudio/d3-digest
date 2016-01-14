@@ -254,6 +254,7 @@ class Proc {
                 callback();
             }
             break;
+
         case 'process_archived_message':
             // This method is a little tricky... or not. It fetches a message from the archive,
             // upserts it and updates the reactions.
@@ -262,7 +263,7 @@ class Proc {
                 .then((doc) => {
                     if(!doc) {
                         doc = this.objectForMessage(msg.payload);
-                        doc.reactions = msg.reactions;
+                        doc.reactions = msg.payload.reactions;
                         this.collection.insertOne(doc).then((result) => {
                             logger.verbose('Loopr', `Requesting prefetch for processed archived message: ${doc.ts}`);
                             this.requestPrefetch(result.ops[0]);
