@@ -254,6 +254,33 @@ class Proc {
                 callback();
             }
             break;
+        case 'process_archived_message':
+            // This method is a little tricky... or not. It fetches a message from the archive,
+            // upserts it and updates the reactions.
+            logger.verbose('Loopr', 'Processing archived message.');
+            this.collection.findOne({ ts: msg.payload.ts })
+                .then((doc) => {
+                    if(!doc) {
+                        doc = this.objectForMessage(msg.payload);
+                        doc.reactions = msg.reactions;
+                        this.collection.insertOne(doc).then((result) => {
+                            logger.verbose('Loopr', `Requesting prefetch for processed archived message: ${doc.ts}`);
+                            this.requestPrefetch(result.ops[0]);
+                            callback();
+                        });
+                    } else {
+                        var newDoc = this.objectForMessage(msg.payload);
+                        newDoc.date = doc.date;
+                        doc = newDoc;
+                        doc.reactions = msg.payload.reactions;
+                        this.collection.replaceOne({ ts: msg.payload.ts }, doc, () => {
+                            logger.verbose('Loopr', `Requesting purge for processed archived message: ${doc.ts}`);
+                            this.requestPurge(doc);
+                            callback();
+                        });
+                    }
+                });
+            break;
         }
     }
 
