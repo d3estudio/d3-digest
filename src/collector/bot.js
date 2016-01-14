@@ -1,7 +1,8 @@
 var inflection = require('inflection'),
     settings = require('../shared/settings').sharedInstance(),
     Redis = require('ioredis'),
-    logger = require('npmlog');
+    logger = require('npmlog'),
+    request = require('request');
 
 /**
  * Receives and preprocesses data coming from the Slack RTM
@@ -145,49 +146,140 @@ class Bot {
                 this.channels.push(msg.channel.name);
             }
         } else {
-            var serializable = {},
-                fields = ['channel', 'team', 'text', 'ts', 'type', 'user', 'event_ts', 'item',
-                        'reaction', 'message', 'deleted_ts'];
-            /*
-             * In order to serialise the message coming from Slack, we must trim some properties.
-             * Here we keep only the essential information that may be useful to other processes.
-             */
-            fields.forEach((k) => {
-                if(msg.hasOwnProperty(k)) {
-                    serializable[k] = msg[k];
-                }
-            });
-
-            if(serializable.user) {
-                var user = this.slack.getUserByID(serializable.user);
-                serializable.user = {
-                    real_name: user.real_name,
-                    username:  user.name,
-                    image:     user.profile.image_192,
-                    title:     user.profile.title
-                };
-            }
-
-            if(!serializable.channel && serializable.item) {
-                serializable.channel = serializable.item.channel;
-            }
-
-            // Silence warnings emitted by channelCheck, since Slack does not provide a channel
-            // for reaction_added when item.type === 'file'
-            if(serializable.item && serializable.item.type === 'file') {
+            if(!msg.channel) {
                 return;
             }
+            if(msg.channel.indexOf('D') === 0) {
 
-            if(serializable.channel && typeof(serializable.channel) === 'string') {
-                serializable.channel = this.slack.getChannelGroupOrDMByID(serializable.channel).name;
-            }
+                // This is a DM message. Let's deal with it on another function.
+                this.processDirectMessage(msg);
+            } else {
 
-            if(Object.keys(serializable).length > 0 && (this.checkedCalls.indexOf(serializable.type) > -1 && this.channelCheck(serializable))) {
-                var serialized = JSON.stringify(serializable);
-                logger.verbose('collector', `rpushing to ${settings.processQueueName}: ${serialized}`);
-                // Push item to the processor queue.
-                this.redis.rpush(settings.processQueueName, serialized);
+                // Okay, coming from a Channel or Group. We also process it from another function.
+                this.processChannelOrGroupMessage(msg);
             }
+        }
+    }
+
+    serializeSlackMessage(msg) {
+        var serializable = {},
+            fields = ['channel', 'team', 'text', 'ts', 'type', 'user', 'event_ts', 'item',
+                    'reaction', 'message', 'deleted_ts'];
+        /*
+         * In order to serialise the message coming from Slack, we must trim some properties.
+         * Here we keep only the essential information that may be useful to other processes.
+         */
+        fields.forEach((k) => {
+            if(msg.hasOwnProperty(k)) {
+                serializable[k] = msg[k];
+            }
+        });
+
+        if(serializable.user) {
+            var user = this.slack.getUserByID(serializable.user);
+            serializable.user = {
+                real_name: user.real_name,
+                username:  user.name,
+                image:     user.profile.image_192,
+                title:     user.profile.title
+            };
+        }
+
+        if(!serializable.channel && serializable.item) {
+            serializable.channel = serializable.item.channel;
+        }
+
+        // Silence warnings emitted by channelCheck, since Slack does not provide a channel
+        // for reaction_added when item.type === 'file'
+        if(serializable.item && serializable.item.type === 'file') {
+            return;
+        }
+
+        if(serializable.channel && typeof(serializable.channel) === 'string') {
+            serializable.channel = this.slack.getChannelGroupOrDMByID(serializable.channel).name;
+        }
+
+        return serializable;
+    }
+
+    processChannelOrGroupMessage(msg) {
+
+        var serializable = this.serializeSlackMessage(msg);
+
+        if(Object.keys(serializable).length > 0 && (this.checkedCalls.indexOf(serializable.type) > -1 && this.channelCheck(serializable))) {
+            var serialized = JSON.stringify(serializable);
+            logger.verbose('collector', `rpushing to ${settings.processQueueName}: ${serialized}`);
+            // Push item to the processor queue.
+            this.redis.rpush(settings.processQueueName, serialized);
+        }
+    }
+
+    processDirectMessage(msg) {
+        if(msg.reply_to) {
+            return;
+        }
+        var incomingDM = this.slack.getChannelGroupOrDMByID(msg.channel),
+            slackArchiveRegex = /https?:\/\/(?:[^.]+).slack.com\/archives\/([^\/]+)\/p(\d+)/,
+            messageIdSplitter = /(\d+)(\d{6})/;
+
+        if(slackArchiveRegex.test(msg.text)) {
+            var archiveItems = slackArchiveRegex.exec(msg.text),
+                channel = this.slack.getChannelGroupOrDMByName(archiveItems[1]),
+                messageId = archiveItems[2];
+            if(!channel || channel.id.indexOf('D') === 0) {
+                incomingDM.send(`Hmm. I don't know a channel/group named #{archiveItems[1]} or I'm not part of it. :white_frowning_face:`);
+            } else {
+                incomingDM.send('An archive link, huh? Let me check it out... :thinking_face:');
+                var endpoint = channel.id.indexOf('C') === 0 ? 'channels' : 'groups',
+                    messageIdParts = messageIdSplitter.exec(messageId);
+                messageIdParts.shift();
+                var ts = messageIdParts.join('.');
+
+                var url = `https://slack.com/api/${endpoint}.history?token=${settings.token}&channel=${channel.id}&latest=${ts}&oldest=${ts}&inclusive=1&count=1`;
+                logger.verbose('collector', 'Requesting: ', url);
+                request.get(url, (e, r, body) => {
+                    if(!e) {
+                        try {
+                            var data = JSON.parse(body);
+                            if(data.ok) {
+                                var remoteMessage = data.messages[0];
+                                if(remoteMessage) {
+                                    remoteMessage.channel = channel.id;
+                                    var doc = this.serializeSlackMessage(remoteMessage);
+                                    doc.reactions = {};
+                                    if(remoteMessage.reactions) {
+                                        remoteMessage.reactions.forEach((r) => {
+                                            doc.reactions[r.name] = r.count;
+                                        });
+                                    }
+                                    var serialized = JSON.stringify({
+                                        type: 'process_archived_message',
+                                        payload: doc
+                                    });
+                                    logger.verbose('collector', `rpushing to ${settings.processQueueName}: ${serialized}`);
+                                    // Push item to the processor queue.
+                                    this.redis.rpush(settings.processQueueName, serialized);
+                                    incomingDM.send('Looks good! Thank you! :robot_face::blue_heart:');
+                                } else {
+                                    logger.verbose('Loopr', `Message ${ts} couldn't be found.`);
+                                    incomingDM.send('Oh! Slack said this message does not exist! Do I belong to the channel it was posted? :confounded:');
+                                }
+                            } else {
+                                logger.verbose('Loopr', `Slack refused to hand over message ${ts}.`);
+                                incomingDM.send('Looks like something is off with Slack (or they refused to hand over that message). Mind trying again later? :confounded:');
+                            }
+                        } catch(ex) {
+                            logger.error('Loopr', `Error parsing response for message ${ts}:`, ex);
+                            incomingDM.send('Erm... Slack replied with gibberish and I couldn\'t understand what they meant. Mind trying again later? :confounded:');
+                        }
+                    } else {
+                        logger.error('Loopr', `HTTP request for message ${ts} failed:`, e);
+                        incomingDM.send('Something went awry and I couldn\' talk with Slack. Mind trying again later? :confounded:');
+                    }
+                });
+            }
+        } else {
+            incomingDM.send(`Hey! I can't help you with that, but I can process or reprocess archive links. :grinning:`);
         }
     }
 }
