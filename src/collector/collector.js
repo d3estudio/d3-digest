@@ -18,5 +18,11 @@ logger.info('entrypoint', 'Connecting to Slack...');
 slack.on('open', () => {
     var bot = new Bot(slack); //eslint-disable-line no-unused-vars
 })
-.on('error', err => logger.error('entrypoint', 'Error: ', err))
+.on('error', err => {
+    logger.error('entrypoint', 'Error: ', err);
+    if(err.code === 'ECONNRESET' || err.code === 'ECONNREFUSED') {
+        logger.warn('entrypoint', 'Slack is reconnecting...');
+        slack.login();
+    }
+})
 .login();
