@@ -146,6 +146,12 @@ class Bot {
                 this.channels.push(msg.channel.name);
             }
         } else {
+
+            // Normalise message channel to pass other filters.
+            if(msg.item && msg.item.channel) {
+                msg.channel = msg.item.channel;
+            }
+
             if(!msg.channel) {
                 return;
             }
