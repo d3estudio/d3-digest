@@ -1,0 +1,2 @@
+#!/bin/bash
+node --use_strict src/shared/lost-and-found.js
