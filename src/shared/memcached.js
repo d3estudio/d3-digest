@@ -44,7 +44,7 @@ class Memcached {
      */
     set(key, value) {
         return new Promise((resolve, reject) => {
-            this.instance.set(key, value, 2592000, (err) => {
+            this.instance.set(key, value, 0, (err) => {
                 if(err) {
                     reject(err);
                 } else {
