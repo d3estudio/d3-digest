@@ -11,7 +11,7 @@ var settings = require('./settings').sharedInstance(),
 
 var run = function() {
     var rl = readline.createInterface(process.stdin, process.stdout);
-    console.log('Fixing missing items...');
+    console.log('Fixing missing items...', rl);
     perform();
 };
 
@@ -41,7 +41,7 @@ var perform = function() {
         .then(result => {
             logger.info('LostAndFound', 'Performing step 2/7: Checking memcached meta state...');
             var proms = {};
-            result.forEach(ts => proms[ts] = memcached.get(`#{settings.metaCachePrefix}#{ts}`))
+            result.forEach(ts => proms[ts] = memcached.get(`#{settings.metaCachePrefix}#{ts}`));
             return Promise.props(proms);
         })
         .then(result => {
@@ -83,8 +83,8 @@ var perform = function() {
             logger.info('LostAndFound', 'Performing step 6/7: Purging memcached data for broken items...');
             var proms = [];
             broken.forEach(i => {
-                proms.push(memcached.get(`#{settings.metaCachePrefix}#{i}`));
-                proms.push(memcached.get(`#{settings.itemCachePrefix}#{i}`));
+                proms.push(memcached.get(`#{settings.metaCachePrefix}#${i}`));
+                proms.push(memcached.get(`#{settings.itemCachePrefix}#${i}`));
             });
             return Promise.all(proms);
         })
