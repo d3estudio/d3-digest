@@ -1,4 +1,7 @@
+> **Notice**: Hi there! Thanks for your interest in **d3-digest**. This project is now unmaintained as we are giving more attention to a more robust and organised version of this project in another repository, called [Digest](https://github.com/d3estudio/digest). Feel free to head over there!
+----
 <p align="center"><img src="https://raw.githubusercontent.com/d3estudio/d3-digest/master/digest-logo.png" /><br/>
+   <a href="https://unmaintained.tech"><img src="http://unmaintained.tech/badge.svg" /></a>
    <a href="https://travis-ci.org/d3estudio/d3-digest"><img src="https://img.shields.io/travis/d3estudio/d3-digest.svg" alt="Build Status"></a>
    <img src="https://img.shields.io/david/d3estudio/d3-digest.svg" alt="Dependency status" />
    <img alt="Language" src="https://img.shields.io/badge/language-JS6-yellow.svg" />
